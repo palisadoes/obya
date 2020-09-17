@@ -1,0 +1,17 @@
+#############################################
+# These additional PIP3 packages are required
+#############################################
+
+# Miscellaneous packages
+PyYAML
+
+# Database packages
+PyMySQL
+SQLAlchemy
+
+# Mathematical libraries
+numpy
+pandas
+
+# Helps with multiprocessing errors
+tblib
