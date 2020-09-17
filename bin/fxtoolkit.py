@@ -24,6 +24,7 @@ else:
 from obya import cli
 from obya import ingest
 from obya.db import setup
+from obya.db.table import data
 
 
 def main():
@@ -43,7 +44,8 @@ def main():
 
     # Autoingest stuff
     if args.mode == 'ingest':
-        ingest.ingest(args.filename)
+        df_ = ingest.ingest(args.filename)
+        data.insert(args.pair, df_)
         sys.exit()
 
     # Process data

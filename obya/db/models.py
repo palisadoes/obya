@@ -55,39 +55,13 @@ class Pair(BASE):
         DATETIME, server_default=text('CURRENT_TIMESTAMP'))
 
 
-class TimeFrame(BASE):
-    """Class defining the ob_timeframe table of the database."""
-
-    __tablename__ = 'ob_timeframe'
-    __table_args__ = (
-        UniqueConstraint(
-            'timeframe'),
-        {
-            'mysql_engine': 'InnoDB'
-        }
-        )
-
-    idx_timeframe = Column(
-        BIGINT(unsigned=True), primary_key=True,
-        autoincrement=True, nullable=False)
-
-    timeframe = Column(INTEGER, nullable=True, default=None)
-
-    ts_modified = Column(
-        DATETIME, server_default=text(
-            'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),)
-
-    ts_created = Column(
-        DATETIME, server_default=text('CURRENT_TIMESTAMP'))
-
-
 class Data(BASE):
     """Class defining the ob_data table of the database."""
 
     __tablename__ = 'ob_data'
     __table_args__ = (
         PrimaryKeyConstraint(
-            'idx_pair', 'timestamp', 'idx_timeframe'),
+            'idx_pair', 'timestamp', 'timeframe'),
         {
             'mysql_engine': 'InnoDB'
         }
@@ -99,20 +73,17 @@ class Data(BASE):
         nullable=False,
         server_default='1')
 
-    idx_timeframe = Column(
-        BIGINT(unsigned=True),
-        ForeignKey('ob_pair.idx'),
-        nullable=False)
+    timeframe = Column(INTEGER, index=True, nullable=False, default=None)
 
-    open = Column(FLOAT, default=None)
+    open = Column(FLOAT, nullable=False, default=None)
 
-    high = Column(FLOAT, default=None)
+    high = Column(FLOAT, nullable=False, default=None)
 
-    low = Column(FLOAT, default=None)
+    low = Column(FLOAT, nullable=False, default=None)
 
-    close = Column(FLOAT, default=None)
+    close = Column(FLOAT, nullable=False, default=None)
 
-    volume = Column(FLOAT, default=None)
+    volume = Column(FLOAT, nullable=False, default=None)
 
     timestamp = Column(BIGINT(unsigned=True), nullable=False, default='1')
 
@@ -129,8 +100,3 @@ class Data(BASE):
         Pair,
         backref=backref(
             'data_pair', uselist=True, cascade='delete,all'))
-
-    timeframe = relationship(
-        TimeFrame,
-        backref=backref(
-            'data_timeframe', uselist=True, cascade='delete,all'))

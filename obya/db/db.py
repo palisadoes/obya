@@ -2,7 +2,7 @@
 from contextlib import contextmanager
 
 # Application libraries
-from obya.utils import log
+from obya import log
 from obya.db import POOL
 
 

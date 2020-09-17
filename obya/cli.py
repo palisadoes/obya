@@ -91,16 +91,18 @@ def _ingest(subparsers, width=80):
     parser.add_argument(
         '--filename',
         type=str,
+        required=True,
         help=textwrap.fill(
             'Name of file to ingest.', width=width)
     )
 
-    # Process directory flag
+    # Process filename flag
     parser.add_argument(
-        '--directory',
+        '--pair',
         type=str,
+        required=True,
         help=textwrap.fill(
-            'Name of directory with files to ingest.', width=width)
+            'Pair to ingest.', width=width)
     )
 
 
