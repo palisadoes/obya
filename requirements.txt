@@ -12,6 +12,15 @@ SQLAlchemy
 # Mathematical libraries
 numpy
 pandas
+sklearn
 
 # Helps with multiprocessing errors
 tblib
+
+# Tensorflow
+tensorflow
+tensorflow_addons
+hyperopt
+
+# Plotting
+matplotlib
