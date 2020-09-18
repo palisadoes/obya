@@ -20,7 +20,7 @@ def exists(pair):
     rows = []
 
     # Get name from database
-    with db.db_query(20031) as session:
+    with db.db_query(1005) as session:
         rows = session.query(_Pair.idx).filter(
             _Pair.pair == pair.lower().encode())
 
@@ -50,5 +50,5 @@ def insert(item):
 
     # Insert
     row = _Pair(pair=pair.encode())
-    with db.db_modify(20052) as session:
+    with db.db_modify(1002) as session:
         session.add(row)

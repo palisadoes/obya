@@ -20,7 +20,8 @@ def ingest(filepath):
     # Create the timestamp column
     df_['timestamp'] = pd.to_datetime(
         df_['day'] + ':' + df_['time'],
-        format='%Y.%m.%d:%H:%M'
+        format='%Y.%m.%d:%H:%M',
+        utc=True
         ).astype('int64')//1e9
 
     # Drop unwanted columns

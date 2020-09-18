@@ -1,5 +1,6 @@
 """Application module to maniupate the Data database table."""
 
+import time
 import pandas as pd
 from sqlalchemy import and_
 
@@ -40,7 +41,7 @@ def insert(pair_, df_):
         idx_pair = pair.exists(pair_)
 
     # Get name from database
-    with db.db_query(20031) as session:
+    with db.db_query(1004) as session:
         items = session.query(_Data.timestamp).filter(
             and_(
                 _Data.timeframe == timeframe,
@@ -72,7 +73,7 @@ def insert(pair_, df_):
         )
 
     # Insert
-    with db.db_modify(20052) as session:
+    with db.db_modify(1007) as session:
         session.add_all(rows)
 
 
@@ -89,14 +90,14 @@ def dataframe(pair_, timeframe):
     """
     # Initialize key variables
     rows = []
-    columns = 'timestamp open high low close volume'
+    columns = 'timestamp date open high low close volume'
     df_ = None
 
     # Get the index for the pair
     idx_pair = pair.exists(pair_)
 
     # Get name from database
-    with db.db_query(20031) as session:
+    with db.db_query(1006) as session:
         rows = session.query(
             _Data.timestamp,
             _Data.open,
@@ -115,6 +116,7 @@ def dataframe(pair_, timeframe):
     if bool(rows) is True:
         df_ = pd.DataFrame(
             [(row.timestamp,
+              time.strftime('%Y-%m-%d %H:%M', time.gmtime(row.timestamp)),
               row.open,
               row.high,
               row.low,
@@ -122,5 +124,4 @@ def dataframe(pair_, timeframe):
               row.volume
               ) for row in rows],
             columns=columns.split())
-
     return df_

@@ -56,7 +56,20 @@ def main():
 
     # Evaluate data
     if args.mode == 'evaluate':
-        evaluate.evaluate(args.pair, args.timeframe)
+        result = evaluate.evaluate(args.pair, args.timeframe)
+
+        # Print result
+        for _, row in result.iterrows():
+            item = '{} {:6.4f} {:6.4f} {:6.4f} {:6.4f} {:10.0f}'.format(
+                row['date'],
+                row['open'],
+                row['high'],
+                row['low'],
+                row['close'],
+                int(row['volume'])
+            )
+            print(item)
+
         sys.exit()
 
     # Exit
