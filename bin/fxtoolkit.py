@@ -23,6 +23,7 @@ else:
 # Import application libraries
 from obya import cli
 from obya import ingest
+from obya import evaluate
 from obya.db import setup
 from obya.db.table import data
 
@@ -42,15 +43,20 @@ def main():
     parser = parse.parser()
     args = parser.parse_args()
 
-    # Autoingest stuff
+    # Ingest data
     if args.mode == 'ingest':
         df_ = ingest.ingest(args.filename)
         data.insert(args.pair, df_)
         sys.exit()
 
-    # Process data
+    # Setup database
     if args.mode == 'setup':
         setup.setup()
+        sys.exit()
+
+    # Evaluate data
+    if args.mode == 'evaluate':
+        evaluate.evaluate(args.pair, args.timeframe)
         sys.exit()
 
     # Exit

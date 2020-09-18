@@ -24,3 +24,6 @@ hyperopt
 
 # Plotting
 matplotlib
+
+# Technical analysis
+ta

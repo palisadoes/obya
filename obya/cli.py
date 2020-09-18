@@ -59,14 +59,50 @@ class Parser(object):
         # Parse "ingest", return object used for parser
         _ingest(subparsers, width=width)
 
-        # Parse "process", return object used for parser
+        # Parse "setup", return object used for parser
         _setup(subparsers, width=width)
 
-        # Return the CLI arguments
-        # args = parser.parse_args()
+        # Parse "evaluate", return object used for parser
+        _evaluate(subparsers, width=width)
 
         # Return our parsed CLI arguments
         return _parser
+
+def _evaluate(subparsers, width=80):
+    """Process "evaluate" CLI commands.
+
+    Args:
+        subparsers: Subparsers object
+        width: Width of the help text string to STDIO before wrapping
+
+    Returns:
+        None
+
+    """
+    # Initialize key variables
+    parser = subparsers.add_parser(
+        'evaluate',
+        help=textwrap.fill(
+            'Evaluate FX data in database.', width=width)
+    )
+
+    # Process pair flag
+    parser.add_argument(
+        '--pair',
+        type=str,
+        required=True,
+        help=textwrap.fill(
+            'Pair to evaluate.', width=width)
+    )
+
+    # Process timeframe flag
+    parser.add_argument(
+        '--timeframe',
+        type=str,
+        required=True,
+        help=textwrap.fill(
+            'Timeframe to evaluate.', width=width)
+    )
 
 
 def _ingest(subparsers, width=80):
@@ -96,7 +132,7 @@ def _ingest(subparsers, width=80):
             'Name of file to ingest.', width=width)
     )
 
-    # Process filename flag
+    # Process pair flag
     parser.add_argument(
         '--pair',
         type=str,

@@ -1,8 +1,7 @@
 """Application module to maniupate the Data database table."""
 
+import pandas as pd
 from sqlalchemy import and_
-from pprint import pprint
-import sys
 
 # Import project libraries
 from obya.db import db
@@ -55,7 +54,7 @@ def insert(pair_, df_):
     for item in items:
         lookups.append(int(item.timestamp))
 
-    # Update the data
+    # Poplulate data to be inserted into the database
     for _, row in df_.iterrows():
         if int(row['timestamp']) in lookups:
             continue
@@ -75,3 +74,53 @@ def insert(pair_, df_):
     # Insert
     with db.db_modify(20052) as session:
         session.add_all(rows)
+
+
+def dataframe(pair_, timeframe):
+    """Create a Data table entries.
+
+    Args:
+        pair_: pair
+        timeframe: Timeframe of data
+
+    Returns:
+        df_: pd.Dataframe retrieved
+
+    """
+    # Initialize key variables
+    rows = []
+    columns = 'timestamp open high low close volume'
+    df_ = None
+
+    # Get the index for the pair
+    idx_pair = pair.exists(pair_)
+
+    # Get name from database
+    with db.db_query(20031) as session:
+        rows = session.query(
+            _Data.timestamp,
+            _Data.open,
+            _Data.high,
+            _Data.low,
+            _Data.close,
+            _Data.volume,
+            ).filter(
+                and_(
+                    _Data.timeframe == timeframe,
+                    _Data.idx_pair == idx_pair
+                )
+            )
+
+    # Populate lookup list
+    if bool(rows) is True:
+        df_ = pd.DataFrame(
+            [(row.timestamp,
+              row.open,
+              row.high,
+              row.low,
+              row.close,
+              row.volume
+              ) for row in rows],
+            columns=columns.split())
+
+    return df_
