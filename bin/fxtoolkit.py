@@ -56,18 +56,23 @@ def main():
 
     # Evaluate data
     if args.mode == 'evaluate':
-        result = evaluate.evaluate(args.pair, args.timeframe)
+        df_ = data.dataframe(args.pair, args.timeframe)
+        result = evaluate.evaluate(df_, 29)
 
         # Print result
         for _, row in result.iterrows():
-            item = '{} {:6.4f} {:6.4f} {:6.4f} {:6.4f} {:10.0f}'.format(
+            item = '''{} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f}'''.format(
                 row['date'],
-                row['open'],
-                row['high'],
-                row['low'],
-                row['close'],
-                int(row['volume'])
+                row['k'],
+                row['d'],
+                row['delta'],
+                row['h4_k'],
+                row['h4_d'],
+                row['h4_delta'],
+                row['delta'] - row['h4_delta'],
+                row['counts']
             )
+
             print(item)
 
         sys.exit()

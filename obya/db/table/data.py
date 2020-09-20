@@ -116,7 +116,7 @@ def dataframe(pair_, timeframe):
     if bool(rows) is True:
         df_ = pd.DataFrame(
             [(row.timestamp,
-              time.strftime('%Y-%m-%d %H:%M', time.gmtime(row.timestamp)),
+              time.strftime('%Y-%m-%d %H:%M %a', time.gmtime(row.timestamp)),
               row.open,
               row.high,
               row.low,

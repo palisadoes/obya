@@ -36,7 +36,7 @@ class TestEvaluate(unittest.TestCase):
     # General object setup
     #########################################################################
     _evaluate = evaluate.Evaluate(
-        evaluate.package(
+        evaluate.summary(
             ingest.ingest(
                 '{0}{1}tests{1}data{1}test_ingest_2_years.csv'.format(
                     ROOT_DIR, os.sep)),
@@ -81,7 +81,7 @@ class TestEvaluate(unittest.TestCase):
     def test_difference(self):
         """Testing function difference."""
         # Initialize key variables
-        limit = 5
+        limit = 1
 
         # Test
         result = self._evaluate.difference(limit)
@@ -90,16 +90,14 @@ class TestEvaluate(unittest.TestCase):
         for index, value in enumerate(k_values):
             self.assertTrue(abs(value - d_values[index]) < limit)
 
-    def test_matches(self):
-        """Testing function matches."""
+    def test_either(self):
+        """Testing function either."""
         # Initialize key variables
-        difference = 5
         above = 90
         below = 10
 
         # Test
-        result = self._evaluate.matches(
-            difference=difference,
+        result = self._evaluate.either(
             above=above,
             below=below
         )
@@ -107,13 +105,36 @@ class TestEvaluate(unittest.TestCase):
         k_values = result['k'].tolist()
         d_values = result['d'].tolist()
         for index, kval in enumerate(k_values):
-            dval = d_values[index]
-            self.assertTrue(abs(kval - dval) < difference)
-
             # Both stochastic values cannot be between above and below
+            dval = d_values[index]
             self.assertFalse(
                 (below < kval < above) and (below < dval < above)
             )
+
+    # def test_matches(self):
+    #     """Testing function matches."""
+    #     # Initialize key variables
+    #     difference = 5
+    #     above = 90
+    #     below = 10
+    #
+    #     # Test
+    #     result = self._evaluate.matches(
+    #         difference=difference,
+    #         above=above,
+    #         below=below
+    #     )
+    #
+    #     k_values = result['k'].tolist()
+    #     d_values = result['d'].tolist()
+    #     for index, kval in enumerate(k_values):
+    #         dval = d_values[index]
+    #         self.assertTrue(abs(kval - dval) < difference)
+    #
+    #         # Both stochastic values cannot be between above and below
+    #         self.assertFalse(
+    #             (below < kval < above) and (below < dval < above)
+    #         )
 
 
 class TestFunctions(unittest.TestCase):
@@ -125,7 +146,47 @@ class TestFunctions(unittest.TestCase):
 
     def test_evaluate(self):
         """Testing function evaluate."""
-        pass
+        # Initialize key variables
+        k_period = 5
+        d_period = 3
+        periods = 4
+        filepath = '{0}{1}tests{1}data{1}test_ingest_2_years.csv'.format(
+            ROOT_DIR, os.sep)
+
+        expected = pd.DataFrame(
+            data={
+                'open': [
+                    86.714, 87.117, 87.032, 87.175
+                ],
+                'high': [
+                    87.139, 87.176, 87.078, 87.401
+                ],
+                'low': [
+                    86.681, 86.756, 86.731, 87.085
+                ],
+                'close': [
+                    87.116, 87.030, 86.731, 87.365
+                ],
+                'volume': [
+                    26309, 23287, 5450, 6023
+                ],
+                'timestamp': [
+                    1486728000, 1486742400, 1486756800, 1486936800
+                ],
+                'k': [
+                    97.245509, 79.722222, 12.228797, 95.081967
+                ],
+                'd': [
+                    86.926937, 81.036488, 63.065509, 62.344329
+                ]
+            }
+        )
+
+        # Test
+        data = ingest.ingest(filepath)
+        result = evaluate.evaluate(
+            data, periods, k_period=k_period, d_period=d_period)
+        # print('\n\n\n', result, '\n\n\n')
 
     def test_stoch(self):
         """Testing function stoch."""
@@ -174,8 +235,8 @@ class TestFunctions(unittest.TestCase):
                 expected[column].tolist()
             )
 
-    def test_package(self):
-        """Testing function package."""
+    def test_summary(self):
+        """Testing function summary."""
         # Initialize key variables
         columns = 'open high low close volume timestamp'
         periods = 10
@@ -192,7 +253,71 @@ class TestFunctions(unittest.TestCase):
 
         # Test
         data = dataset.dataset()
-        result = evaluate.package(data, periods=periods)
+        result = evaluate.summary(data, periods=periods)
+
+        # Test one column at a time
+        for column in columns.split():
+            self.assertEqual(
+                result[column].tolist(),
+                expected[column].tolist()
+            )
+
+        # Test for a short period
+        periods = 5
+        expected = pd.DataFrame(
+            data={
+                'open': [
+                    85.882, 86.184, 86.419, 86.465, 86.964, 86.983
+                ],
+                'high': [
+                    87.015, 87.015, 87.139, 87.176, 87.176, 87.401
+                ],
+                'low': [
+                    85.864, 86.126, 86.304, 86.456, 86.669, 86.669
+                ],
+                'close': [
+                    86.985, 86.714, 87.116, 87.030, 86.731, 87.365
+                ],
+                'volume': [
+                    101024, 93260, 99727, 110365, 93567, 82390
+                ],
+                'timestamp': [
+                    1486699200, 1486713600, 1486728000,
+                    1486742400, 1486756800, 1486936800
+                ]
+            }
+        )
+
+        # Test
+        data = dataset.dataset()
+        result = evaluate.summary(data, periods=periods)
+
+        # Test one column at a time
+        for column in columns.split():
+            self.assertEqual(
+                result[column].tolist(),
+                expected[column].tolist()
+            )
+
+    def test_batch(self):
+        """Testing function batch."""
+        # Initialize key variables
+        columns = 'open high low close volume timestamp'
+        boundary = 604800
+        expected = pd.DataFrame(
+            data={
+                'open': [87.032],
+                'high': [87.078],
+                'low': [86.731],
+                'close': [86.731],
+                'volume': [5450],
+                'timestamp': [1486756800]
+            }
+        )
+
+        # Test
+        data = dataset.dataset()
+        result = evaluate.batch(data, boundary=boundary)
 
         # Test one column at a time
         for column in columns.split():

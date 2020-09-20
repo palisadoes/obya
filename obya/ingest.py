@@ -27,3 +27,21 @@ def ingest(filepath):
     # Drop unwanted columns
     df_ = df_.drop(columns=['time', 'day'])
     return df_
+
+
+def date(_df):
+    """Add date column to DataFrame.
+
+    Args:
+        _df: DataFrame to modify
+
+    Returns:
+        df_: Dataframe with date column added.
+
+    """
+    # Initalize key variables
+    df_ = _df.copy()
+
+    # Create the timestamp column
+    df_['date'] = pd.to_datetime(df_['timestamp'], unit='s', utc=True)
+    return df_

@@ -1,25 +1,31 @@
 """Application evaluation module."""
 
 import ta
+import pandas as pd
+from pprint import pprint
 
-from obya.db.table import data
+from obya import log
+from obya import ingest
 
 
 class Evaluate():
     """Class to evaluate dataframe."""
 
-    def __init__(self, _df):
+    def __init__(self, _df, k_period=35, d_period=5):
         """Initialize the class.
 
         Args:
             _df: pd.DataFrame
+            k_period: Periods for calculating Stochastic slow indicator
+            d_period: Moving Average periods for smoothing Stochastic to create
+                the fast indicator
 
         Returns:
             None
 
         """
         # Initalize key variables
-        self._df = stoch(_df)
+        self._df = stoch(_df, k_period=k_period, d_period=d_period)
 
     def above(self, limit=90, fast=True):
         """Get DataFrame rows where Stochastic is greater than a value.
@@ -71,55 +77,45 @@ class Evaluate():
         result = self._df.loc[abs(self._df['d'] - self._df['k']) < limit]
         return result
 
-    def matches(self, below=10, above=90, difference=1):
+    def either(self, below=10, above=90):
         """Create DataFrame that meets evaluation criteria.
 
         Args:
             below: Below limit
             above: Above limit
-            difference: Difference
-
 
         Returns:
             result: DataFrame that matches criteria
 
         """
         # Initialize key variables
-        matches_limit = {}
+        matches_ = {}
 
         # Get index values where the Stochastic indicators
         # exceed the desired limits
         for fast in [True, False]:
             for item in self.above(above, fast=fast).index.tolist():
-                matches_limit[item] = None
+                matches_[item] = None
             for item in self.below(below, fast=fast).index.tolist():
-                matches_limit[item] = None
-
-        # Get index values where the difference between Stochastic indicators
-        # exceed the desired limits
-        matches_d = self.difference(difference).index.tolist()
+                matches_[item] = None
 
         # Get the indexes with matches in both cases
-        indexes = list(
-            set(
-                list(
-                    matches_limit.keys()
-                )
-            ).intersection(matches_d)
-        )
-        indexes.sort()
+        indexes = tuple(sorted(matches_.keys()))
 
         # Return
         result = self._df[self._df.index.isin(indexes)]
         return result
 
 
-def evaluate(pair, timeframe):
+def evaluate(_df, periods, k_period=35, d_period=5):
     """Evaluate data.
 
     Args:
-        pair: Pair to evaluate
-        timeframe: Timeframe to evaluate
+        df_: DataFrame to analyse
+        periods: Timeframe to evaluate
+        k_period: Periods for calculating Stochastic slow indicator
+        d_period: Moving Average periods for smoothing Stochastic to create
+            the fast indicator
 
     Returns:
         None
@@ -128,25 +124,89 @@ def evaluate(pair, timeframe):
     # Initialize key variables
     k_period = 35
     d_period = 5
-    offset = k_period + d_period
+    # boundary = 604800
+    df_ = _df.copy()
 
     # Get DataFrame
-    df_ = data.dataframe(pair, timeframe)
-    result = stoch(df_, k_period=k_period, d_period=d_period)[offset:]
-    evaluate_ = Evaluate(result)
-    hour4 = evaluate_.matches()
+    evaluate_4 = Evaluate(df_, k_period=k_period, d_period=d_period)
+    hour_4 = evaluate_4.either()
 
     # Get DataFrame using weekly timeframe (42, 4 hour periods)
-    df_ = package(df_, periods=42)
-    result = stoch(df_, k_period=k_period, d_period=d_period)[offset:]
-    evaluate_ = Evaluate(result)
-    hour168 = evaluate_.matches(difference=4)
+    df_168 = summary(df_, periods=periods)
+    # df_168 = batch(summary_, boundary=boundary)
+    evaluate_168 = Evaluate(df_168, k_period=k_period, d_period=d_period)
+    hour_168 = evaluate_168.difference(limit=4)
 
-    # Remove duplicates
-    index_4 = hour4.index.tolist()
-    index_168 = hour168.index.tolist()
-    indexes = tuple(sorted(list(set(index_4).intersection(index_168))))
-    result = df_[df_.index.isin(indexes)]
+    # Get common index values
+    index_4 = hour_4.index.tolist()
+    index_168 = hour_168.index.tolist()
+    indexes = tuple(set(index_4).intersection(index_168))
+
+    print('\n\n\n', len(hour_4), len(hour_168), '\n\n\n')
+
+    # Filter DataFrame by indexes
+    # result = df_.loc[df_.index.isin(indexes)]
+    result = hour_168.copy()
+    result['delta'] = result['k'] - result['d']
+    result['h4_k'] = hour_4['k']
+    result['h4_d'] = hour_4['d']
+    result['h4_delta'] = hour_4['k'] - hour_4['d']
+    result = result.loc[result.index.isin(indexes)]
+    result = frequency(result, hour_4)
+    print(ingest.date(result))
+
+    # Calculate the frequencies
+
+    # print('\n\n\n')
+    # result = frequency(hour_168, hour_4)
+    # print(ingest.date(result))
+    # # print('\n\n\n')
+    # # print(ingest.date(hour_4))
+    # print('\n\n\n')
+    return result
+
+
+def frequency(long_, short_, periods=28):
+    """Determine frequency of short instances in long time frame.
+
+    Calculates the number of times within a time period that indexes in the
+    short DataFrame match those of the long DataFrame.
+
+    Args:
+        long_: DataFrame on long time horizon
+        short_: DataFrame on short time horizon
+        periods: Number of short periods to create a long period
+
+    Returns:
+        result: DataFrame with count column added
+
+    """
+    # Initialize key variables
+    long = long_.copy()
+    short = short_.copy()
+    l_index = sorted(long.index.tolist())
+    s_index = sorted(short.index.tolist())
+    counts = {}
+    column = []
+
+    # Count the occurences
+    for _, pointer in enumerate(l_index):
+        indexes = list(range(pointer, pointer - periods, - 1))
+        count = 0
+        for index in s_index:
+            if index in indexes:
+                count += 1
+        counts[pointer] = count
+
+    # Add ocurrences to DataFrame
+    if bool(counts) is True:
+        column = counts.values()
+        long['counts'] = column
+    else:
+        long['counts'] = [0] * len(long)
+
+    # Remove entries where the count is zero
+    result = long.loc[long['counts'] != 0]
     return result
 
 
@@ -182,12 +242,12 @@ def stoch(_df, k_period=35, d_period=5):
     return result
 
 
-def package(_df, periods=5):
-    """Convert dataframe to different timeframe.
+def summary(_df, periods=5):
+    """Create a DataFrame summarizing past events.
 
     Args:
         _df: pd.DataFrame
-        periods: Number of periods to include in new timeframe batch
+        periods: Number of previous periods to include in summarization
 
     Returns:
         result: Modified DataFrame
@@ -200,4 +260,37 @@ def package(_df, periods=5):
     df_['volume'] = df_['volume'].rolling(periods).sum()
     df_['open'] = df_['open'].shift(periods - 1)
     result = df_[periods - 1:]
+    return result
+
+
+def batch(_df, boundary=604800):
+    """Get DataFrame entries on a timestamp boundary.
+
+    Args:
+        _df: pd.DataFrame
+        boundary: Timestamp boundary
+
+    Returns:
+        result: Modified DataFrame
+
+    """
+    # Initialize key variables
+    df_ = _df.copy()
+
+    # Apply offset to account for the fact that epoch time is calculated from
+    # midnight, 1/1/1970 which was a Thursday. Weekly day boundaries are
+    # calculated starting at midnight, Sunday.
+    offset = 259200
+
+    if boundary == 604800:
+        # Apply offset to account for the fact that epoch time is calculated
+        # from midnight, 1/1/1970 which was a Thursday. Four hour week
+        # boundaries are calculated ending at 20:00, friday.
+        offset = 158400
+    else:
+        log_message = 'Boundary value {} is not valid'.format(boundary)
+        log.log2die(1012, log_message)
+
+    # Return
+    result = df_.loc[((df_['timestamp'] - offset) % boundary) == 0]
     return result
