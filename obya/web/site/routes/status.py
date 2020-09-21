@@ -1,4 +1,4 @@
-"""Pattoo version routes."""
+"""Application routes - Status Screen."""
 
 # PIP libraries
 from flask import Blueprint

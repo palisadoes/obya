@@ -1,4 +1,4 @@
-"""Pattoo version routes."""
+"""Application routes - Charts."""
 
 # Standard imports
 import sys

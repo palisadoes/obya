@@ -34,8 +34,8 @@ Minimum value {} is greater than {}. Please fix.\
         '{0}__pycache__{0}'.format(os.sep),
         '{0}_archive{0}'.format(os.sep),
         '{0}_deprecated{0}'.format(os.sep),
-        '{0}pattoo-shared{0}build{0}'.format(os.sep),
-        '{0}pattoo-shared{0}dist{0}'.format(os.sep),
+        '{0}build{0}'.format(os.sep),
+        '{0}dist{0}'.format(os.sep),
         '.egg',
         '{0}docs{0}'.format(os.sep),
         '{0}daemon{0}'.format(os.sep),
@@ -128,8 +128,8 @@ Extremely small error code {} found. Must be greater than {}. Please fix.
 
     # Print report
     print('''
-Pattoo Logging Error Code Summary Report
-----------------------------------------
+Application Logging Error Code Summary Report
+---------------------------------------------
 Starting Code              : {}
 Ending Code                : {}
 Duplicate Codes to Resolve : {}

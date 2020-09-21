@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Class used to create the configuration file used for unittesting.
 
-NOTE!! This script CANNOT import any pattoo libraries. Doing so risks
+NOTE!! This script CANNOT import any application libraries. Doing so risks
 libraries trying to access a configuration or configuration directory that
 doesn't yet exist. This is especially important when running cloud based
 automated tests such as 'Travis CI'.
@@ -17,7 +17,7 @@ import sys
 DEV_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(
     os.path.abspath(os.path.join(DEV_DIR, os.pardir)), os.pardir))
-_EXPECTED = '{0}pattoo{0}tests{0}bin'.format(os.sep)
+_EXPECTED = '{0}obya{0}tests{0}bin'.format(os.sep)
 if DEV_DIR.endswith(_EXPECTED) is True:
     sys.path.insert(0, ROOT_DIR)
 else:

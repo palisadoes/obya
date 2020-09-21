@@ -1,4 +1,4 @@
-"""Pattoo version routes."""
+"""Application routes - Home Screen."""
 
 # PIP libraries
 from flask import Blueprint, render_template
