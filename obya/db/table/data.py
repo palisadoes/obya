@@ -1,6 +1,8 @@
 """Application module to maniupate the Data database table."""
 
 import time
+from datetime import timezone
+import datetime
 import pandas as pd
 from sqlalchemy import and_
 
@@ -77,12 +79,13 @@ def insert(pair_, df_):
         session.add_all(rows)
 
 
-def dataframe(pair_, timeframe):
+def dataframe(pair_, timeframe, secondsago=None):
     """Create a Data table entries.
 
     Args:
         pair_: pair
         timeframe: Timeframe of data
+        secondsago: Number of seconds in the past for valid data
 
     Returns:
         df_: pd.Dataframe retrieved
@@ -92,6 +95,14 @@ def dataframe(pair_, timeframe):
     rows = []
     columns = 'timestamp date open high low close volume'
     df_ = None
+
+    # Get starting time
+    if secondsago is not None and isinstance(secondsago, (int, float)):
+        # Get current UTC timestamp
+        now = datetime.datetime.now().replace(tzinfo=timezone.utc).timestamp()
+        start = now - abs(secondsago)
+    else:
+        start = 0
 
     # Get the index for the pair
     idx_pair = pair.exists(pair_)
@@ -108,7 +119,8 @@ def dataframe(pair_, timeframe):
             ).filter(
                 and_(
                     _Data.timeframe == timeframe,
-                    _Data.idx_pair == idx_pair
+                    _Data.idx_pair == idx_pair,
+                    _Data.timestamp >= start
                 )
             )
 

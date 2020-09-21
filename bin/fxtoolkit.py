@@ -7,6 +7,8 @@ Test
 # Standard imports
 import os
 import sys
+from datetime import timezone
+import datetime
 
 # Try to create a working PYTHONPATH
 _BIN_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -24,12 +26,14 @@ else:
 from obya import cli
 from obya import ingest
 from obya import evaluate
+from obya import formatter
 from obya.db import setup
 from obya.db.table import data
+from obya.db.table import pair
 
 
 def main():
-    """Format Nagios host configuration.
+    """Main function.
 
     Args:
         None
@@ -56,29 +60,56 @@ def main():
 
     # Evaluate data
     if args.mode == 'evaluate':
-        df_ = data.dataframe(args.pair, args.timeframe)
-        result = evaluate.evaluate(df_, 29)
+        print(_report(args.pair, args.timeframe, days=args.days))
+        sys.exit()
 
-        # Print result
-        for _, row in result.iterrows():
-            item = '''{} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f} {:8.4f}'''.format(
-                row['date'],
-                row['k'],
-                row['d'],
-                row['delta'],
-                row['h4_k'],
-                row['h4_d'],
-                row['h4_delta'],
-                row['delta'] - row['h4_delta'],
-                row['counts']
-            )
-
-            print(item)
-
+    # Email data
+    if args.mode == 'email':
+        pairs = pair.pairs()
+        for pair_ in pairs:
+            print(_report(pair_, args.timeframe, days=args.days))
         sys.exit()
 
     # Exit
     parser.print_help()
+
+
+def _report(_pair, timeframe, days=None):
+    """Create reports.
+
+    Args:
+        _pair: Pair to Evaluate
+        timeframe: Timeframe
+        days: Age of report in days
+
+    Returns:
+        result: String report
+
+    """
+    # Initialize key variables
+    secondsago = 365 * 24 * 3600
+    result = ''
+
+    # Get starting time
+    if days is not None and isinstance(days, (int, float)):
+        # Get current UTC timestamp
+        now = datetime.datetime.now().replace(tzinfo=timezone.utc).timestamp()
+        start = now - abs(days * 2600 * 24)
+    else:
+        start = 0
+
+    # Process data
+    df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
+    if df_.empty is False:
+        result_ = evaluate.evaluate(df_, 29)
+
+        # Drop all rows that are older than days
+        result_ = result_.loc[df_['timestamp'] >= start]
+
+        # Create report
+        if result_.empty is False:
+            result = formatter.email(result_)
+    return result
 
 
 if __name__ == '__main__':

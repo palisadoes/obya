@@ -111,8 +111,8 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     """Evaluate data.
 
     Args:
-        df_: DataFrame to analyse
-        periods: Timeframe to evaluate
+        df_: Short term DataFrame to analyse
+        periods: Number of periods per long term timeframe
         k_period: Periods for calculating Stochastic slow indicator
         d_period: Moving Average periods for smoothing Stochastic to create
             the fast indicator
@@ -128,41 +128,33 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     df_ = _df.copy()
 
     # Get DataFrame
-    evaluate_4 = Evaluate(df_, k_period=k_period, d_period=d_period)
-    hour_4 = evaluate_4.either()
+    s_eval = Evaluate(df_, k_period=k_period, d_period=d_period)
+    s_term = s_eval.either()
 
     # Get DataFrame using weekly timeframe (42, 4 hour periods)
-    df_168 = summary(df_, periods=periods)
-    # df_168 = batch(summary_, boundary=boundary)
-    evaluate_168 = Evaluate(df_168, k_period=k_period, d_period=d_period)
-    hour_168 = evaluate_168.difference(limit=4)
+    s_summary = summary(df_, periods=periods)
+    # s_summary = batch(summary_, boundary=boundary)
+    l_eval = Evaluate(s_summary, k_period=k_period, d_period=d_period)
+    l_term = l_eval.difference(limit=4)
 
     # Get common index values
-    index_4 = hour_4.index.tolist()
-    index_168 = hour_168.index.tolist()
-    indexes = tuple(set(index_4).intersection(index_168))
-
-    # print('\n\n\n', len(hour_4), len(hour_168), '\n\n\n')
+    indexes = tuple(
+        set(
+            s_term.index.tolist()
+        ).intersection(
+            l_term.index.tolist()
+        )
+    )
 
     # Filter DataFrame by indexes
-    # result = df_.loc[df_.index.isin(indexes)]
-    result = hour_168.copy()
-    result['delta'] = result['k'] - result['d']
-    result['h4_k'] = hour_4['k']
-    result['h4_d'] = hour_4['d']
-    result['h4_delta'] = hour_4['k'] - hour_4['d']
+    result = l_term.copy()
+    result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
+    result['delta_l'] = result['k_l'] - result['d_l']
+    result['k_s'] = s_term['k']
+    result['d_s'] = s_term['d']
+    result['delta_s'] = s_term['k'] - s_term['d']
     result = result.loc[result.index.isin(indexes)]
-    result = frequency(result, hour_4)
-    # print(ingest.date(result))
-
-    # Calculate the frequencies
-
-    # print('\n\n\n')
-    # result = frequency(hour_168, hour_4)
-    # print(ingest.date(result))
-    # # print('\n\n\n')
-    # # print(ingest.date(hour_4))
-    # print('\n\n\n')
+    result = frequency(result, s_term)
     return result
 
 
@@ -184,16 +176,14 @@ def frequency(long_, short_, periods=28, no_zeros=True):
     # Initialize key variables
     long = long_.copy()
     short = short_.copy()
-    l_index = sorted(long.index.tolist())
-    s_index = sorted(short.index.tolist())
     counts = {}
     column = []
 
     # Count the occurences
-    for _, pointer in enumerate(l_index):
+    for _, pointer in enumerate(sorted(long.index.tolist())):
         indexes = list(range(pointer, pointer - periods, - 1))
         count = 0
-        for index in s_index:
+        for index in sorted(short.index.tolist()):
             if index in indexes:
                 count += 1
         counts[pointer] = count

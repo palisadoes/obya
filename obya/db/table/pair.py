@@ -5,6 +5,30 @@ from obya.db import db
 from obya.db.models import Pair as _Pair
 
 
+def pairs():
+    """Get list of pairs in table.
+
+    Args:
+        None
+
+    Returns:
+        result: list of pairs
+
+    """
+    # Initialize key variables
+    result = []
+    rows = []
+
+    # Get name from database
+    with db.db_query(1016) as session:
+        rows = session.query(_Pair.pair)
+
+    # Return
+    for row in rows:
+        result.append(row.pair.decode())
+    return result
+
+
 def exists(pair):
     """Determine whether pair exists in the Pair table.
 

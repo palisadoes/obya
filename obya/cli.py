@@ -65,8 +65,49 @@ class Parser(object):
         # Parse "evaluate", return object used for parser
         _evaluate(subparsers, width=width)
 
+        # Parse "email", return object used for parser
+        _email(subparsers, width=width)
+
         # Return our parsed CLI arguments
         return _parser
+
+
+def _email(subparsers, width=80):
+    """Process "email" CLI commands.
+
+    Args:
+        subparsers: Subparsers object
+        width: Width of the help text string to STDIO before wrapping
+
+    Returns:
+        None
+
+    """
+    # Initialize key variables
+    parser = subparsers.add_parser(
+        'email',
+        help=textwrap.fill(
+            'Evaluate FX data in database.', width=width)
+    )
+
+    # Process timeframe flag
+    parser.add_argument(
+        '--timeframe',
+        type=str,
+        required=True,
+        help=textwrap.fill(
+            'Timeframe to email.', width=width)
+    )
+
+    # Process days flag
+    parser.add_argument(
+        '--days',
+        type=int,
+        default=1,
+        help=textwrap.fill(
+            'Number of days to include in the report.', width=width)
+    )
+
 
 def _evaluate(subparsers, width=80):
     """Process "evaluate" CLI commands.
@@ -102,6 +143,15 @@ def _evaluate(subparsers, width=80):
         required=True,
         help=textwrap.fill(
             'Timeframe to evaluate.', width=width)
+    )
+
+    # Process days flag
+    parser.add_argument(
+        '--days',
+        type=int,
+        default=None,
+        help=textwrap.fill(
+            'Number of days to include in the report.', width=width)
     )
 
 
