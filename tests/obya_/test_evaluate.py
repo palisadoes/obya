@@ -128,40 +128,39 @@ class TestFunctions(unittest.TestCase):
         filepath = '{0}{1}tests{1}data{1}test_ingest_2_years.csv'.format(
             ROOT_DIR, os.sep)
 
-        expected = pd.DataFrame(
-            data={
-                'open': [
-                    86.714, 87.117, 87.032, 87.175
-                ],
-                'high': [
-                    87.139, 87.176, 87.078, 87.401
-                ],
-                'low': [
-                    86.681, 86.756, 86.731, 87.085
-                ],
-                'close': [
-                    87.116, 87.030, 86.731, 87.365
-                ],
-                'volume': [
-                    26309, 23287, 5450, 6023
-                ],
-                'timestamp': [
-                    1486728000, 1486742400, 1486756800, 1486936800
-                ],
-                'k': [
-                    97.245509, 79.722222, 12.228797, 95.081967
-                ],
-                'd': [
-                    86.926937, 81.036488, 63.065509, 62.344329
-                ]
-            }
-        )
+        expected_data = {
+            'index': [2657, 2666, 2669, 2671, 2672],
+            'open': [76.959, 77.528, 78.027, 78.141, 78.028],
+            'high': [77.95, 78.45, 78.45, 78.354, 78.326],
+            'low': [76.776, 77.403, 78.008, 78.007, 78.007],
+            'close': [77.81, 78.194, 78.233, 78.191, 78.206],
+            'volume': [73970, 60312, 58036, 64416, 77026],
+            'timestamp': [
+                1598587200, 1598889600, 1598932800, 1598961600, 1598976000],
+            'k': [94.052676, 91.030133, 92.396636, 90.189394, 90.757576],
+            'd': [94.626981, 91.223783, 90.83075, 88.427949, 89.018147],
+            'delta': [-0.574305, -0.19365, 1.565887, 1.761445, 1.739429],
+            'h4_k': [94.052676, 91.030133, 91.780303, 90.189394, 90.6298],
+            'h4_d': [94.626981, 91.223783, 90.360365, 87.862439, 88.535051],
+            'h4_delta': [-0.574305, -0.19365, 1.419938, 2.326955, 2.094749],
+            'counts': [11, 14, 17, 18, 18]
+        }
+
+        expected = pd.DataFrame(data=expected_data)
 
         # Test
         data = ingest.ingest(filepath)
         result = evaluate.evaluate(
-            data, periods, k_period=k_period, d_period=d_period)
-        # print('\n\n\n', result, '\n\n\n')
+            data, periods, k_period=k_period, d_period=d_period).tail()
+
+        # Test one column at a time
+        for column, _ in expected_data.items():
+            if column == 'index':
+                continue
+            self.assertEqual(
+                result[column].astype(float).round(3).tolist(),
+                expected[column].astype(float).round(3).tolist()
+            )
 
     def test_frequency(self):
         """Testing function frequency."""

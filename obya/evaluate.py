@@ -142,7 +142,7 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     index_168 = hour_168.index.tolist()
     indexes = tuple(set(index_4).intersection(index_168))
 
-    print('\n\n\n', len(hour_4), len(hour_168), '\n\n\n')
+    # print('\n\n\n', len(hour_4), len(hour_168), '\n\n\n')
 
     # Filter DataFrame by indexes
     # result = df_.loc[df_.index.isin(indexes)]
@@ -153,7 +153,7 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     result['h4_delta'] = hour_4['k'] - hour_4['d']
     result = result.loc[result.index.isin(indexes)]
     result = frequency(result, hour_4)
-    print(ingest.date(result))
+    # print(ingest.date(result))
 
     # Calculate the frequencies
 
