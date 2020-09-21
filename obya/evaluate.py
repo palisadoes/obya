@@ -166,7 +166,7 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     return result
 
 
-def frequency(long_, short_, periods=28):
+def frequency(long_, short_, periods=28, no_zeros=True):
     """Determine frequency of short instances in long time frame.
 
     Calculates the number of times within a time period that indexes in the
@@ -206,7 +206,10 @@ def frequency(long_, short_, periods=28):
         long['counts'] = [0] * len(long)
 
     # Remove entries where the count is zero
-    result = long.loc[long['counts'] != 0]
+    if no_zeros is True:
+        result = long.loc[long['counts'] != 0]
+    else:
+        result = long.copy()
     return result
 
 

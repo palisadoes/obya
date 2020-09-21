@@ -63,8 +63,8 @@ class _GetLog():
 
         # Get the logging directory
         config = Config()
-        log_file = config.log_file()
-        config_log_level = config.log_level()
+        log_file = config.log_file
+        config_log_level = config.log_level
 
         # Set logging level
         if config_log_level in levels:
@@ -274,7 +274,7 @@ Bug: Exception Type:{}, Exception Instance: {}, Stack Trace Object: {}]\
     # Write trace to log file
     from obya import Config
     config = Config()
-    log_file = config.log_file()
+    log_file = config.log_file
     with open(log_file, 'a+') as _fh:
         traceback.print_tb(exc_traceback, file=_fh)
 

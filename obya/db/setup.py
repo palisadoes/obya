@@ -42,13 +42,13 @@ def setup():
         try:
             sql_string = ('''\
 ALTER DATABASE {} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\
-'''.format(config.db_name()))
+'''.format(config.db_name))
             engine.execute(sql_string)
         except:
             log_message = '''\
 Cannot connect to database {}. Verify database server is started. Verify \
 database is created. Verify that the configured database authentication is \
-correct.'''.format(config.db_name())
+correct.'''.format(config.db_name)
             log.log2die(1036, log_message)
 
         # Apply schemas

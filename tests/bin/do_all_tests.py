@@ -83,12 +83,12 @@ def run_script(cli_string):
     """
     # Initialize key variables
     encoding = locale.getdefaultlocale()[1]
-    obya_returncode = ('----- obya Return Code '
-                         '----------------------------------------')
-    obya_stdoutdata = ('----- obya Test Output '
-                         '----------------------------------------')
-    obya_stderrdata = ('----- obya Test Error '
-                         '-----------------------------------------')
+    obya_returncode = (
+        '----- obya Return Code ----------------------------------------')
+    obya_stdoutdata = (
+        '----- obya Test Output ----------------------------------------')
+    obya_stderrdata = (
+        '----- obya Test Error -----------------------------------------')
 
     # Say what we are doing
     string2print = '\nRunning Command: {}'.format(cli_string)

@@ -38,12 +38,16 @@ class UnittestConfig():
 
         self._config = {
             'obya': {
-                'log_directory': self._log_directory,
-                'log_level': 'debug',
                 'db_hostname': 'localhost',
                 'db_username': 'travis',
                 'db_password': 'fKjafGGQqw89CtbS',
-                'db_name': 'obya_unittest'
+                'db_name': 'obya_unittest',
+                'email_to': 'test@example.org',
+                'email_from': 'noreply@example.org',
+                'smtp_user': 'obya',
+                'smtp_pass': 'YsaaHsQzruHwT5V5',
+                'log_directory': self._log_directory,
+                'log_level': 'debug',
             },
         }
 
@@ -76,7 +80,8 @@ class UnittestConfig():
 Insufficient permissions for creating the file:{}'''.format(f_handle))
             else:
                 with f_handle:
-                    yaml.dump(contents, f_handle, default_flow_style=False)
+                    yaml.dump(
+                        contents['obya'], f_handle, default_flow_style=False)
 
         # Return
         return self._config_directory

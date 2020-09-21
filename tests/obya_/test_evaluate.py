@@ -111,31 +111,6 @@ class TestEvaluate(unittest.TestCase):
                 (below < kval < above) and (below < dval < above)
             )
 
-    # def test_matches(self):
-    #     """Testing function matches."""
-    #     # Initialize key variables
-    #     difference = 5
-    #     above = 90
-    #     below = 10
-    #
-    #     # Test
-    #     result = self._evaluate.matches(
-    #         difference=difference,
-    #         above=above,
-    #         below=below
-    #     )
-    #
-    #     k_values = result['k'].tolist()
-    #     d_values = result['d'].tolist()
-    #     for index, kval in enumerate(k_values):
-    #         dval = d_values[index]
-    #         self.assertTrue(abs(kval - dval) < difference)
-    #
-    #         # Both stochastic values cannot be between above and below
-    #         self.assertFalse(
-    #             (below < kval < above) and (below < dval < above)
-    #         )
-
 
 class TestFunctions(unittest.TestCase):
     """Checks all functions and methods."""
@@ -187,6 +162,56 @@ class TestFunctions(unittest.TestCase):
         result = evaluate.evaluate(
             data, periods, k_period=k_period, d_period=d_period)
         # print('\n\n\n', result, '\n\n\n')
+
+    def test_frequency(self):
+        """Testing function frequency."""
+        # Initialize key variables
+        long = pd.DataFrame(data={'long': list(range(20))})
+        short = pd.DataFrame(data={'short': list(range(5))})
+        periods = 10
+        expected_data = {
+            'long': list(range(20)),
+            'counts': [
+                1, 2, 3, 4, 5,
+                5, 5, 5, 5, 5,
+                4, 3, 2, 1, 0,
+                0, 0, 0, 0, 0
+            ]
+        }
+
+        # Expected
+        expected = pd.DataFrame(data=expected_data)
+
+        # Test with zeros
+        result = evaluate.frequency(
+            long, short, periods=periods, no_zeros=False)
+
+        # Test one column at a time
+        for column, _ in expected_data.items():
+            self.assertEqual(
+                result[column].tolist(),
+                expected[column].tolist()
+            )
+
+        # Test without zeros
+        result = evaluate.frequency(
+            long, short, periods=periods)
+
+        no_zero_data = {
+            'long': list(range(14)),
+            'counts': [
+                1, 2, 3, 4, 5,
+                5, 5, 5, 5, 5,
+                4, 3, 2, 1
+            ]
+        }
+
+        # Test one column at a time
+        for column, _ in no_zero_data.items():
+            self.assertEqual(
+                result[column].tolist(),
+                no_zero_data[column]
+            )
 
     def test_stoch(self):
         """Testing function stoch."""

@@ -45,15 +45,11 @@ def main():
     # Get configuration
     config = Config()
 
-    # Define SQLAlchemy parameters from configuration
-    pool_size = config.db_pool_size()
-    max_overflow = config.db_max_overflow()
-
     # Create DB connection pool
     if use_mysql is True:
         URL = ('mysql+pymysql://{}:{}@{}/{}?charset=utf8mb4'.format(
-            config.db_username(), config.db_password(),
-            config.db_hostname(), config.db_name()))
+            config.db_username, config.db_password,
+            config.db_hostname, config.db_name))
 
         # Fix for multiprocessing on pools.
         # _add_engine_pidguard(QueuePool)
@@ -65,8 +61,8 @@ def main():
             echo_pool=False,
             encoding='utf8',
             poolclass=QueuePool,
-            max_overflow=max_overflow,
-            pool_size=pool_size,
+            max_overflow=config.db_max_overflow,
+            pool_size=config.db_pool_size,
             pool_pre_ping=True,
             pool_recycle=pool_recycle,
             pool_timeout=pool_timeout)
