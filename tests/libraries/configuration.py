@@ -13,7 +13,7 @@ import tempfile
 import os
 import yaml
 
-# Pattoo imports
+# Application imports
 from obya import log
 
 

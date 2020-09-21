@@ -46,6 +46,30 @@ class Config():
         self._base_yaml_configuration = _config_reader('obya.yaml')
 
     @property
+    def daemon_directory(self):
+        """Determine the daemon_directory.
+
+        Args:
+            None
+
+        Returns:
+            value: configured daemon_directory
+
+        """
+        # Initialize key variables
+        _result = self._base_yaml_configuration.get(
+            'daemon_directory', '/tmp/obya/daemon')
+
+        # Expand linux ~ notation for home directories if provided.
+        value = os.path.expanduser(_result)
+
+        # Create directory if it doesn't exist
+        _mkdir(value)
+
+        # Return
+        return value
+
+    @property
     def db_name(self):
         """Get db_name.
 
@@ -169,6 +193,51 @@ class Config():
         return result
 
     @property
+    def ip_listen_address(self):
+        """Get ip_listen_address.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Get result
+        result = self._base_yaml_configuration.get(
+            'ip_listen_address', '0.0.0.0')
+        return result
+
+    @property
+    def ip_bind_port(self):
+        """Get ip_bind_port.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Get result
+        result = self._base_yaml_configuration.get('ip_bind_port', 30300)
+        return result
+
+    def lock_file(self, agent_name):
+        """Get the lockfile name for an agent.
+
+        Args:
+            None
+
+        Returns:
+            value: Name of file
+
+        """
+        # Return
+        value = self._daemon_file(agent_name, 'lock')
+        return value
+
+    @property
     def log_directory(self):
         """Get log_directory.
 
@@ -211,6 +280,36 @@ class Config():
         result = '{}{}obya.log'.format(_log_directory, os.sep)
         return result
 
+    @property
+    def log_file_api(self):
+        """Get log_file_api.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        _log_directory = self.log_directory
+        result = '{}{}obya-api.log'.format(_log_directory, os.sep)
+        return result
+
+    @property
+    def log_file_daemon(self):
+        """Get log_file_daemon.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        _log_directory = self.log_directory
+        result = '{}{}obya-daemon.log'.format(_log_directory, os.sep)
+        return result
+        
     @property
     def log_level(self):
         """Get log_level.
@@ -258,3 +357,81 @@ class Config():
         _result = self._base_yaml_configuration.get('smtp_user')
         result = '{}'.format(_result)
         return result
+
+    def pid_file(self, agent_name):
+        """Get the pidfile name for an agent.
+
+        Args:
+            None
+
+        Returns:
+            value: Name of file
+
+        """
+        # Initialize key variables
+        directory = '{}{}pid'.format(self.daemon_directory, os.sep)
+        value = '{}{}{}.pid'.format(directory, os.sep, agent_name)
+
+        # Create directory if it doesn't exist
+        _mkdir(directory)
+
+        # Return
+        return value
+
+    def pid_file(self, agent_name):
+        """Get the pidfile name for an agent.
+
+        Args:
+            None
+
+        Returns:
+            value: Name of file
+
+        """
+        # Return
+        value = self._daemon_file(agent_name, 'pid')
+        return value
+
+    def _daemon_file(self, agent_name, suffix):
+        """Get the pidfile name for an agent.
+
+        Args:
+            agent_name: Name of agent
+            suffix: Suffix for file name
+
+        Returns:
+            value: Name of file
+
+        """
+        # Initialize key variables
+        directory = '{}{}{}'.format(self.daemon_directory, os.sep, suffix)
+        value = '{}{}{}.{}'.format(directory, os.sep, agent_name, suffix)
+
+        # Create directory if it doesn't exist
+        _mkdir(directory)
+
+        # Return
+        return value
+
+def _mkdir(directory):
+    """Create a directory if it doesn't already exist.
+
+    Args:
+        directory: Directory name
+
+    Returns:
+        None
+
+    """
+    # Do work
+    if os.path.exists(directory) is False:
+        try:
+            os.makedirs(directory, mode=0o750, exist_ok=True)
+        except:
+            log_message = 'Cannot create directory {}.'.format(directory)
+            log.log2die(1020, log_message)
+
+    # Fail if not a directory
+    if os.path.isdir(directory) is False:
+        log_message = '{} is not a directory.'.format(directory)
+        log.log2die(1021, log_message)

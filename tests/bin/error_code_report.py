@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test all the pattoo modules."""
+"""Script to reveal duplicate error codes in the application modules."""
 
 from __future__ import print_function
 import os
@@ -18,12 +18,12 @@ else:
 '''.format(_EXPECTED))
     sys.exit(2)
 
-# Import pattoo libraries
+# Import application libraries
 from tests.libraries import errors
 
 
 def main():
-    """Get all the error codes used in pattoo.
+    """Get all the error codes used in application.
 
     Args:
         None

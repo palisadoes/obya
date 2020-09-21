@@ -1,6 +1,8 @@
 """Module to create datasets for unittesting."""
 
 import pandas as pd
+import random
+import string
 
 
 def dataset():
@@ -40,4 +42,20 @@ def dataset():
         ]
     }
     result = pd.DataFrame(data=data)
+    return result
+
+
+def random_string(length=20):
+    """Create random string for testing.
+
+    Args:
+        None
+
+    Returns:
+        result: Random string
+
+    """
+    # Return
+    result = ''.join(random.SystemRandom().choice(
+        string.ascii_uppercase + string.digits) for _ in range(length))
     return result

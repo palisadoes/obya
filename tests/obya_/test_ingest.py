@@ -20,7 +20,7 @@ else:
 '''.format(_EXPECTED))
     sys.exit(2)
 
-# Pattoo imports
+# Application imports
 from tests.libraries.configuration import UnittestConfig
 from tests.libraries import dataset
 from obya import ingest
