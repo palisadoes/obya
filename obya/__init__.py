@@ -7,6 +7,7 @@ OBYA_WEBD_PROXY = 'obya_wsgid'
 FOLDER_WEB_STATIC = 'theme/static'
 FOLDER_WEB_TEMPLATE = 'theme/templates'
 OBYA_WEB_SITE_PREFIX = '/obya'
+OBYA_API_SITE_PREFIX = '{}/api'.format(OBYA_WEB_SITE_PREFIX)
 
 # Named tuples
 AgentAPIVariable = namedtuple(

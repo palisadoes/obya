@@ -4,12 +4,15 @@
 from flask import Flask, url_for
 
 # Define the global URL prefix
-from obya import OBYA_WEB_SITE_PREFIX, FOLDER_WEB_STATIC, FOLDER_WEB_TEMPLATE
+from obya import (
+    OBYA_WEB_SITE_PREFIX, OBYA_API_SITE_PREFIX, FOLDER_WEB_STATIC,
+    FOLDER_WEB_TEMPLATE)
 
 # Import OBYA_WEBD Blueprints
-from obya.web.site.routes.home import OBYA_WEB_HOME
-from obya.web.site.routes.chart import OBYA_WEB_CHART
-from obya.web.site.routes.status import OBYA_WEB_STATUS
+from obya.web.site.route.home import OBYA_WEB_HOME
+from obya.web.site.route.chart import OBYA_WEB_CHART
+from obya.web.site.route.status import OBYA_WEB_STATUS
+from obya.web.api.data import OBYA_API
 
 # Setup flask
 OBYA_WEBD = Flask(
@@ -26,6 +29,11 @@ OBYA_WEBD.register_blueprint(
     OBYA_WEB_CHART, url_prefix='{}/chart'.format(OBYA_WEB_SITE_PREFIX))
 OBYA_WEBD.register_blueprint(
     OBYA_WEB_STATUS, url_prefix='{}/status'.format(OBYA_WEB_SITE_PREFIX))
+
+# Register API Blueprints
+OBYA_WEBD.register_blueprint(
+    OBYA_API, url_prefix='{}'.format(OBYA_API_SITE_PREFIX))
+
 
 # Function to easily find your assests
 OBYA_WEBD.jinja_env.globals['static'] = (
