@@ -26,10 +26,10 @@ def stoch(pair_):
     pair = pair_.upper()
     timeframe = 14400
 
-    slow = Stoch(pair, timeframe)
+    slow = Stoch(pair, timeframe, periods=28)
     slow_table = slow.table()
 
-    fast = Stoch(pair, timeframe * 2)
+    fast = Stoch(pair, timeframe, periods=None)
     fast_table = fast.table()
 
     # Show bandwidth charts only if the customer has allocated bandwidth

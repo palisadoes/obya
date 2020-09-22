@@ -18,19 +18,20 @@ class _RawCol(Col):
 class Stoch():
     """Class that creates the Customer's various HTML tables."""
 
-    def __init__(self, pair, timeframe):
+    def __init__(self, pair, timeframe, periods=None):
         """Initialize the class.
 
         Args:
             pair: Currency pair
             timeframe: Timeframe
+            periods: Number of periods for summarization
 
         Returns:
             None
 
         """
         # Get cabinet ID data for customer
-        self._data = _data(pair, timeframe)
+        self._data = _data(pair, timeframe, periods)
 
     def table(self):
         """Create the cabinets table for the customer.
@@ -82,12 +83,13 @@ class _Row():
         self.chart = chart
 
 
-def _data(pair, timeframe):
+def _data(pair, timeframe, periods=None):
     """Return whether port is enabled.
 
     Args:
         pair: Currency pair
         timeframe: Timeframe
+        periods: Number of periods for summarization
 
     Returns:
         rows: List of Col objects
@@ -96,7 +98,7 @@ def _data(pair, timeframe):
     # Initialize key variables
     rows = []
     y_axis = 'Percent'
-    url = api.stoch(pair)
+    url = api.stoch(pair, periods=periods)
 
     # Create subheadings
     h1_ = pair.upper()
@@ -104,7 +106,7 @@ def _data(pair, timeframe):
     h3_ = timeframe
 
     # Assign variables.
-    div_id = '{}_stoch_{}'.format(h1_, h3_)
+    div_id = '{}_{}_{}'.format(h1_, h3_, periods)
     chart_html = ("""\
 <div id="{0}"></div>
 <script type="text/javascript">

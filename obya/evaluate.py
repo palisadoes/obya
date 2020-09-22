@@ -1,11 +1,8 @@
 """Application evaluation module."""
 
 import ta
-import pandas as pd
-from pprint import pprint
 
 from obya import log
-from obya import ingest
 
 
 class Evaluate():
@@ -231,7 +228,7 @@ def stoch(_df, k_period=35, d_period=5):
     # Add columns to DataFrame
     df_['k'] = oscillator.stoch()
     df_['d'] = oscillator.stoch_signal()
-    result = df_[k_period + 1:]
+    result = df_[k_period + d_period:]
     return result
 
 

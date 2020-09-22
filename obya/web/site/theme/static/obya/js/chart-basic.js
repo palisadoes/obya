@@ -14,8 +14,9 @@
     // Initialise key variables
     var margin = {top: 20, right: 250, bottom: 50, left: 50};
     var headingVOffset = 0;
-    var outerWidth = 1050;
+    var outerWidth = 1400;
     var outerHeight = 400;
+    var mouseover = 1
     var innerWidth = outerWidth - margin.left - margin.right;
     var innerHeight = outerHeight - margin.top - margin.bottom;
 
@@ -179,6 +180,105 @@
 
       // Clean up line
       whip.exit().remove();
+
+      // Do mouseover if this is the only chart on the page
+        if (mouseover == 1) {
+
+          // Mouse stuff - Taken from https://bl.ocks.org/larsenmtl/e3b8b7c2ca4787f77d78f58d41c3da91
+          var mouseG = svg.append('g')
+            // Make the x,y mouse positions over the chart map to the 'g' area via a left margin offset
+            .attr('transform', 'translate(' + margin.left + ', ' + (0) + ')')
+            .attr('class', 'mouse-over-effects');
+
+          mouseG.append('path') // this is the black vertical line to follow mouse
+            .attr('class', 'mouse-line')
+            .style('stroke', '#b9d3a4')
+            .style('stroke-width', '1px')
+            .style('opacity', '0');
+
+          var lines = document.getElementsByClassName('line');
+
+          var mousePerLine = mouseG.selectAll('.mouse-per-line')
+            .data(whips)
+            .enter()
+            .append('g')
+            .attr('class', 'mouse-per-line');
+
+          mousePerLine.append('circle')
+            .attr('r', 7)
+            .style('stroke', function(d) {
+              return standard_colors(d.id);
+            })
+            .style('fill', 'none')
+            .style('stroke-width', '1px')
+            .style('opacity', '0');
+
+          mousePerLine.append('text')
+            .attr('transform', 'translate(10,3)');
+
+          // Clean upn line
+          mousePerLine.exit().remove();
+
+          mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
+            .attr('width', innerWidth) // can't catch mouse events on a g element
+            .attr('height', innerHeight)
+            .attr('fill', 'none')
+            .attr('pointer-events', 'all')
+            .on('mouseout', function() { // on mouse out hide line, circles and text
+              d3.select('.mouse-line')
+                .style('opacity', '0');
+              d3.selectAll('.mouse-per-line circle')
+                .style('opacity', '0');
+              d3.selectAll('.mouse-per-line text')
+                .style('opacity', '0');
+            })
+            .on('mouseover', function() { // on mouse in show line, circles and text
+              d3.select('.mouse-line')
+                .style('opacity', '1');
+              d3.selectAll('.mouse-per-line circle')
+                .style('opacity', '1');
+              d3.selectAll('.mouse-per-line text')
+                .style('opacity', '1');
+            })
+            .on('mousemove', function() { // mouse moving over canvas
+              var mouseX = d3.mouse(this)[0];
+              d3.select('.mouse-line')
+                .attr('d', function() {
+                  // Positions vertical line at mouse that fits in the vertical height of 'g'
+                  var d = 'M' + mouseX + ',' + (outerHeight - margin.bottom);
+                  d += ' ' + mouseX + ',' + margin.top;
+                  return d;
+                });
+
+              d3.selectAll('.mouse-per-line')
+                .attr('transform', function(d, i) {
+                  //console.log(width/mouseX)
+                  var xDate = x.invert(mouseX),
+                      bisect = d3.bisector(function(d) { return d.date; }).right;
+                      idx = bisect(d.values, xDate);
+
+                  var beginning = 0,
+                      end = lines[i].getTotalLength(),
+                      target = null;
+
+                  while (true){
+                    target = Math.floor((beginning + end) / 2);
+                    pos = lines[i].getPointAtLength(target);
+                    if ((target === end || target === beginning) && pos.x !== mouseX) {
+                        break;
+                    }
+                    if (pos.x > mouseX)      end = target;
+                    else if (pos.x < mouseX) beginning = target;
+                    else break; //position found
+                  }
+
+                  d3.select(this).select('text')
+                    .text(y.invert(pos.y).toFixed(2));
+
+                  return 'translate(' + mouseX + ',' + (pos.y + margin.top) +')';
+                });
+            });
+          } // mouseover chart - mouse over end if
 
     });
 

@@ -309,7 +309,7 @@ class Config():
         _log_directory = self.log_directory
         result = '{}{}obya-daemon.log'.format(_log_directory, os.sep)
         return result
-        
+
     @property
     def log_level(self):
         """Get log_level.
@@ -429,7 +429,7 @@ def _mkdir(directory):
             os.makedirs(directory, mode=0o750, exist_ok=True)
         except:
             log_message = 'Cannot create directory {}.'.format(directory)
-            log.log2die(1020, log_message)
+            log.log2die(1017, log_message)
 
     # Fail if not a directory
     if os.path.isdir(directory) is False:
