@@ -2,6 +2,7 @@
 
 from obya import OBYA_WEB_SITE_PREFIX
 
+
 def stoch(pair):
     """Return URL for showing chart pages.
 

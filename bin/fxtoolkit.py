@@ -87,16 +87,11 @@ def _report(_pair, timeframe, days=None):
 
     """
     # Initialize key variables
-    secondsago = 365 * 24 * 3600
-    result = ''
-
-    # Get starting time
-    if days is not None and isinstance(days, (int, float)):
-        # Get current UTC timestamp
-        now = datetime.datetime.now().replace(tzinfo=timezone.utc).timestamp()
-        start = now - abs(days * 2600 * 24)
+    if bool(days) is False:
+        secondsago = 365 * 24 * 3600
     else:
-        start = 0
+        secondsago = 365 * days * 3600
+    result = ''
 
     # Process data
     df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
@@ -104,7 +99,7 @@ def _report(_pair, timeframe, days=None):
         result_ = evaluate.evaluate(df_, 29)
 
         # Drop all rows that are older than days
-        result_ = result_.loc[df_['timestamp'] >= start]
+        result_ = evaluate.recent(result_, secondsago=secondsago)
 
         # Create report
         if result_.empty is False:

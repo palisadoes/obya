@@ -1,7 +1,13 @@
 """Application evaluation module."""
 
+# Standard imports
+from datetime import timezone
+import datetime
+
+# PIP3 imports
 import ta
 
+# Appliation imports
 from obya import log
 
 
@@ -283,4 +289,31 @@ def batch(_df, boundary=604800):
 
     # Return
     result = df_.loc[((df_['timestamp'] - offset) % boundary) == 0]
+    return result
+
+
+def recent(_df, secondsago=15768000):
+    """Get only the most recent entries in a DataFrame.
+
+    Args:
+        _df: DataFrame
+        secondsago: Maximum age of DataFrame entries
+
+    Returns:
+        result: String report
+
+    """
+    # Initialize key variables
+    result = None
+    df_ = _df.copy()
+
+    # Get starting time
+    now = datetime.datetime.now().replace(tzinfo=timezone.utc).timestamp()
+    start = now - secondsago
+
+    # Process data
+    if df_.empty is False:
+        # Drop all rows that are older than days
+        result = df_.loc[df_['timestamp'] >= start]
+
     return result

@@ -15,7 +15,7 @@
     var margin = {top: 20, right: 250, bottom: 50, left: 50};
     var headingVOffset = 0;
     var outerWidth = 1400;
-    var outerHeight = 400;
+    var outerHeight = 200;
     var mouseover = 1
     var innerWidth = outerWidth - margin.left - margin.right;
     var innerHeight = outerHeight - margin.top - margin.bottom;
