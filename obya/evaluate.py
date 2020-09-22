@@ -28,7 +28,8 @@ class Evaluate():
 
         """
         # Initalize key variables
-        self._df = stoch(_df, k_period=k_period, d_period=d_period)
+        df_ = _df.copy()
+        self._df = stoch(df_, k_period=k_period, d_period=d_period)
 
     def above(self, limit=90, fast=True):
         """Get DataFrame rows where Stochastic is greater than a value.

@@ -26,7 +26,7 @@ def stoch(pair_):
     pair = pair_.upper()
     timeframe = 14400
 
-    slow = Stoch(pair, timeframe, periods=28)
+    slow = Stoch(pair, timeframe, periods=29)
     slow_table = slow.table()
 
     fast = Stoch(pair, timeframe, periods=None)

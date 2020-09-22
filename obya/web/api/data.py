@@ -40,10 +40,11 @@ def stoch(pair_):
     df_ = data.dataframe(pair, timeframe)
     if df_.empty is False:
         if bool(periods) is True:
-            result_ = evaluate.evaluate(df_, periods)
+            result_ = evaluate.summary(df_, periods=periods)
+            result_ = evaluate.stoch(result_)
             result_ = evaluate.recent(result_)
-            k_values = result_['k_l'].values.tolist()
-            d_values = result_['d_l'].values.tolist()
+            k_values = result_['k'].values.tolist()
+            d_values = result_['d'].values.tolist()
             timestamps = result_['timestamp'].values.tolist()
         else:
             result_ = evaluate.stoch(df_)
