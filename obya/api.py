@@ -1,8 +1,10 @@
 """Application API module."""
 
+import json
+from collections import namedtuple
+
 # PIP imports
 import urllib3
-import json
 
 # Application imports
 from obya import Config
@@ -103,6 +105,88 @@ class API():
         result = self.get(uri)
         return result
 
+    def recent(self, pair, seconds, limit=20):
+        """Get historical results.
+
+        Args:
+            pair: Pair to identify
+            seconds: Timeframe to query represented in seconds
+            limit: Maximum number of results to return
+
+        Returns:
+            result: Historical data
+
+        """
+        # Initialize key variables
+        result = None
+
+        # Get the interval
+        meta = _interval_span(seconds)
+
+        # Return if timeframe is not found
+        if meta.interval is None:
+            return result
+
+        # Get market ID
+        id_ = self._market_id(pair)
+
+        # Return if not found
+        if id_ is False:
+            return result
+
+        if bool(limit) is True:
+            # Create URI
+            uri = ('''\
+/market/{}/barhistory?interval={}&span={}&PriceBars={}\
+'''.format(id_, meta.interval, meta.span, limit))
+        else:
+            return result
+
+        # Return
+        result = self.get(uri)
+        return result
+
+    def historical(self, pair, seconds, start=None, stop=None):
+        """Get historical results.
+
+        Args:
+            pair: Pair to identify
+            seconds: Timeframe to query represented in seconds
+            start: UTC timestamp start
+            stop: UTC timestamp stop
+
+        Returns:
+            result: Historical data
+
+        """
+        # Initialize key variables
+        interval = None
+        span = None
+        result = None
+
+        # Get the interval
+        meta = _interval_span(seconds)
+
+        # Return if timeframe is not found
+        if meta.interval is None:
+            return result
+
+        # Get market ID
+        id_ = self._market_id(pair)
+
+        # Return if not found
+        if id_ is False:
+            return result
+
+        if bool(limit) is True:
+            # Create URI
+            uri = (
+                '/market/{}/barhistory?interval={}&span={}&PriceBars={}'.format(
+                    id_, meta.interval, meta.span))
+        result = self.get(uri)
+        return result
+
+
     def _market_id(self, pair):
         """Get market ID for FX pair.
 
@@ -133,3 +217,37 @@ market/search?SearchByMarketName=TRUE&Query={}&MaxResults=10'''.format(query)
                     result = item.get('MarketId')
                     break
         return result
+
+
+def _interval_span(seconds):
+    """Get interval and span for lookup.
+
+    Args:
+        seconds: Timeframe to query represented in seconds
+
+    Returns:
+        result: Meta object
+
+    """
+    # Initialize key variables
+    Meta = namedtuple('Meta', 'interval span')
+    interval = None
+    span = None
+    result = None
+    lookup = {
+        3600: 'HOUR',
+        60: 'MINUTE',
+        86400: 'DAY',
+        604800: 'WEEK'
+    }
+
+    # Get the interval
+    for key, value in sorted(lookup.items()):
+        if seconds % key == 0:
+            interval = value
+            span = seconds // key
+            break
+
+    # Return
+    result = Meta(interval=interval, span=span)
+    return result
