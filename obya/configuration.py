@@ -46,6 +46,66 @@ class Config():
         self._base_yaml_configuration = _config_reader('obya.yaml')
 
     @property
+    def api_hostname(self):
+        """Get api_hostname.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Process configuration
+        result = self._base_yaml_configuration.get('api_hostname', 'localhost')
+        return result
+
+    @property
+    def api_key(self):
+        """Get api_key.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Process configuration
+        result = self._base_yaml_configuration.get('api_key', 'obya')
+        return result
+
+    @property
+    def api_username(self):
+        """Get api_username.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Process configuration
+        result = self._base_yaml_configuration.get('api_username', 'obya')
+        return result
+
+    @property
+    def api_password(self):
+        """Get api_password.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Process configuration
+        result = self._base_yaml_configuration.get('api_password')
+        return result
+
+    @property
     def daemon_directory(self):
         """Determine the daemon_directory.
 

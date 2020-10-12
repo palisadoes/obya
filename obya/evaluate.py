@@ -293,7 +293,7 @@ def batch(_df, boundary=604800):
     return result
 
 
-def recent(_df, secondsago=15768000):
+def recent(_df, secondsago=5184000/2):
     """Get only the most recent entries in a DataFrame.
 
     Args:

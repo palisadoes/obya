@@ -68,8 +68,30 @@ class Parser(object):
         # Parse "email", return object used for parser
         _email(subparsers, width=width)
 
+        # Parse "api", return object used for parser
+        _api(subparsers, width=width)
+
         # Return our parsed CLI arguments
         return _parser
+
+
+def _api(subparsers, width=80):
+    """Process "api" CLI commands.
+
+    Args:
+        subparsers: Subparsers object
+        width: Width of the help text string to STDIO before wrapping
+
+    Returns:
+        None
+
+    """
+    # Initialize key variables
+    subparsers.add_parser(
+        'api',
+        help=textwrap.fill(
+            'Connect to the obya data source API.', width=width)
+    )
 
 
 def _email(subparsers, width=80):

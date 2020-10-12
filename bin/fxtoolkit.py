@@ -7,8 +7,6 @@ Test
 # Standard imports
 import os
 import sys
-from datetime import timezone
-import datetime
 
 # Try to create a working PYTHONPATH
 _BIN_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -23,6 +21,7 @@ else:
 
 
 # Import application libraries
+from obya import api
 from obya import cli
 from obya import ingest
 from obya import evaluate
@@ -46,6 +45,13 @@ def main():
     parse = cli.Parser()
     parser = parse.parser()
     args = parser.parse_args()
+
+    # Get data from API data source
+    if args.mode == 'api':
+        _api = api.API()
+        result = _api.hours('gbpusd')
+        print(result)
+        sys.exit()
 
     # Ingest data
     if args.mode == 'ingest':

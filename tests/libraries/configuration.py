@@ -48,6 +48,10 @@ class UnittestConfig():
                 'smtp_pass': 'YsaaHsQzruHwT5V5',
                 'log_directory': self._log_directory,
                 'log_level': 'debug',
+                'api_hostname': 'rkpQ9hKWS7U7Pv5X',
+                'api_username': 'c4FwmcXmH2ZnQMng',
+                'api_password': '73QRBH4y4VdXZyF7',
+                'api_key': 'fxck5rT2aqa3SLTv',
             },
         }
 

@@ -6,8 +6,6 @@ import unittest
 import os
 import sys
 
-import pandas as pd
-
 # Try to create a working PYTHONPATH
 EXEC_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(
@@ -52,6 +50,26 @@ class TestConfig(unittest.TestCase):
         """Testing function __init__."""
         pass
 
+    def test_api_hostname(self):
+        """Testing function api_hostname."""
+        # Test
+        self.assertEqual(self.config.api_hostname, 'rkpQ9hKWS7U7Pv5X')
+
+    def test_api_key(self):
+        """Testing function api_key."""
+        # Test
+        self.assertEqual(self.config.api_key, 'fxck5rT2aqa3SLTv')
+
+    def test_api_password(self):
+        """Testing function api_password."""
+        # Test
+        self.assertEqual(self.config.api_password, '73QRBH4y4VdXZyF7')
+
+    def test_api_username(self):
+        """Testing function api_username."""
+        # Test
+        self.assertEqual(self.config.api_username, 'c4FwmcXmH2ZnQMng')
+
     def test_db_name(self):
         """Testing function db_name."""
         # Test
@@ -70,7 +88,7 @@ class TestConfig(unittest.TestCase):
     def test_db_hostname(self):
         """Testing function db_hostname."""
         # Test
-        self.assertEqual(self.config.db_password, 'fKjafGGQqw89CtbS')
+        self.assertEqual(self.config.db_hostname, 'localhost')
 
     def test_db_pool_size(self):
         """Testing function db_pool_size."""

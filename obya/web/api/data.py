@@ -1,8 +1,7 @@
 """Application routes - API data."""
 
 # PIP libraries
-from flask import Blueprint, render_template, request, jsonify, abort, make_response
-import requests
+from flask import Blueprint, request, jsonify
 
 # Application imports
 from obya.db.table import data
