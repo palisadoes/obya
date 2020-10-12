@@ -2,6 +2,10 @@
 
 import json
 from collections import namedtuple
+from datetime import timezone
+import datetime
+import time
+import re
 
 # PIP imports
 import urllib3
@@ -85,28 +89,8 @@ class API():
         result = json.loads(_api.data.decode())
         return result
 
-    def hours(self, pair, interval=1, max_results=20):
-        """Get hourly historical results.
-
-        Args:
-            pair: Pair to identify
-            interval: Hourly interval
-            max_results: Maximum number of results to return
-
-        Returns:
-            result: Historical data
-
-        """
-        # Initialize key variables
-        id_ = self._market_id(pair)
-        uri = (
-            '/market/{}/barhistory?interval=HOUR&span={}&PriceBars={}'.format(
-                id_, interval, max_results))
-        result = self.get(uri)
-        return result
-
-    def recent(self, pair, seconds, limit=20):
-        """Get historical results.
+    def latest(self, pair, seconds, limit=20):
+        """Get latest historical results.
 
         Args:
             pair: Pair to identify
@@ -120,30 +104,9 @@ class API():
         # Initialize key variables
         result = None
 
-        # Get the interval
-        meta = _interval_span(seconds)
-
-        # Return if timeframe is not found
-        if meta.interval is None:
-            return result
-
-        # Get market ID
-        id_ = self._market_id(pair)
-
-        # Return if not found
-        if id_ is False:
-            return result
-
-        if bool(limit) is True:
-            # Create URI
-            uri = ('''\
-/market/{}/barhistory?interval={}&span={}&PriceBars={}\
-'''.format(id_, meta.interval, meta.span, limit))
-        else:
-            return result
-
         # Return
-        result = self.get(uri)
+        start = int(time.time()) - (seconds * limit)
+        result = self.historical(pair, seconds, start=start)
         return result
 
     def historical(self, pair, seconds, start=None, stop=None):
@@ -160,9 +123,10 @@ class API():
 
         """
         # Initialize key variables
-        interval = None
-        span = None
         result = None
+        if stop is None:
+            stop = int(datetime.datetime.now().replace(
+                tzinfo=timezone.utc).timestamp())
 
         # Get the interval
         meta = _interval_span(seconds)
@@ -178,14 +142,14 @@ class API():
         if id_ is False:
             return result
 
-        if bool(limit) is True:
-            # Create URI
-            uri = (
-                '/market/{}/barhistory?interval={}&span={}&PriceBars={}'.format(
-                    id_, meta.interval, meta.span))
-        result = self.get(uri)
+        # Get result
+        uri = '''\
+/market/{}/barhistorybetween?interval={}&span={}\
+&fromTimestampUTC={}&toTimestampUTC={}\
+'''.format(id_, meta.interval, meta.span, start, stop)
+        _result = self.get(uri)
+        result = _convert(_result)
         return result
-
 
     def _market_id(self, pair):
         """Get market ID for FX pair.
@@ -242,12 +206,42 @@ def _interval_span(seconds):
     }
 
     # Get the interval
-    for key, value in sorted(lookup.items()):
-        if seconds % key == 0:
+    for key, value in sorted(lookup.items(), reverse=True):
+        if not(seconds % key) and seconds >= key:
             interval = value
             span = seconds // key
             break
 
     # Return
     result = Meta(interval=interval, span=span)
+    return result
+
+
+def _convert(data):
+    """Convert data to be compatible with database.
+
+    Args:
+        data: Historical data returned from API
+
+    Returns:
+        result: List of dicts
+
+    """
+    # Initialize key variables
+    result = []
+    items = data['PriceBars']
+
+    # Get result
+    for item in items:
+        result.append(
+            {
+                'open': item['Open'],
+                'high': item['High'],
+                'low': item['Low'],
+                'close': item['Close'],
+                'timestamp': int(int(
+                    re.match(r'^.*?\((\d+)\).*?$', item['BarDate']).group(1)
+                ) / 1000)
+            }
+        )
     return result

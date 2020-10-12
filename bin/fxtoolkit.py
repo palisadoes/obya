@@ -7,6 +7,7 @@ Test
 # Standard imports
 import os
 import sys
+from pprint import pprint
 
 # Try to create a working PYTHONPATH
 _BIN_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -49,8 +50,10 @@ def main():
     # Get data from API data source
     if args.mode == 'api':
         _api = api.API()
-        result = _api.hours('gbpusd')
-        print(result)
+        result = _api.latest('gbpusd', 3600)
+        from pprint import pprint
+        pprint(result)
+        # print(api._interval_span(60 * 15))
         sys.exit()
 
     # Ingest data
