@@ -387,6 +387,35 @@ class Config():
         return result
 
     @property
+    def pairs(self):
+        """Get pairs.
+
+        Args:
+            None
+
+        Returns:
+            result: result
+
+        """
+        # Return
+        result = self._base_yaml_configuration.get('pairs')
+        return result
+
+    def pid_file(self, agent_name):
+        """Get the pidfile name for an agent.
+
+        Args:
+            None
+
+        Returns:
+            value: Name of file
+
+        """
+        # Return
+        value = self._daemon_file(agent_name, 'pid')
+        return value
+
+    @property
     def smtp_pass(self):
         """Get smtp_pass.
 
@@ -418,40 +447,6 @@ class Config():
         result = '{}'.format(_result)
         return result
 
-    def pid_file(self, agent_name):
-        """Get the pidfile name for an agent.
-
-        Args:
-            None
-
-        Returns:
-            value: Name of file
-
-        """
-        # Initialize key variables
-        directory = '{}{}pid'.format(self.daemon_directory, os.sep)
-        value = '{}{}{}.pid'.format(directory, os.sep, agent_name)
-
-        # Create directory if it doesn't exist
-        _mkdir(directory)
-
-        # Return
-        return value
-
-    def pid_file(self, agent_name):
-        """Get the pidfile name for an agent.
-
-        Args:
-            None
-
-        Returns:
-            value: Name of file
-
-        """
-        # Return
-        value = self._daemon_file(agent_name, 'pid')
-        return value
-
     def _daemon_file(self, agent_name, suffix):
         """Get the pidfile name for an agent.
 
@@ -472,6 +467,7 @@ class Config():
 
         # Return
         return value
+
 
 def _mkdir(directory):
     """Create a directory if it doesn't already exist.

@@ -52,6 +52,11 @@ class UnittestConfig():
                 'api_username': 'c4FwmcXmH2ZnQMng',
                 'api_password': '73QRBH4y4VdXZyF7',
                 'api_key': 'fxck5rT2aqa3SLTv',
+                'pairs': [
+                    'AUDCAD', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADJPY', 'EURAUD',
+                    'EURCAD', 'EURGBP', 'EURJPY', 'EURNZD', 'EURUSD', 'GBPAUD',
+                    'GBPCAD', 'GBPNZD', 'GBPUSD', 'NZDCAD', 'NZDJPY', 'NZDUSD',
+                    'USDCAD', 'USDJPY', 'GBPJPY']
             },
         }
 

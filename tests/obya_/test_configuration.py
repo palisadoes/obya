@@ -110,6 +110,19 @@ class TestConfig(unittest.TestCase):
         # Test
         self.assertEqual(self.config.email_to, ['test@example.org'])
 
+    def test_pairs(self):
+        """Testing function pairs."""
+        # Test
+        self.assertEqual(
+            self.config.pairs,
+            [
+                'AUDCAD', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADJPY', 'EURAUD',
+                'EURCAD', 'EURGBP', 'EURJPY', 'EURNZD', 'EURUSD', 'GBPAUD',
+                'GBPCAD', 'GBPNZD', 'GBPUSD', 'NZDCAD', 'NZDJPY', 'NZDUSD',
+                'USDCAD', 'USDJPY', 'GBPJPY'
+            ]
+        )
+
     def test_smtp_pass(self):
         """Testing function smtp_pass."""
         # Test
