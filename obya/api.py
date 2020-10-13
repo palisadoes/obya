@@ -6,12 +6,14 @@ from datetime import timezone
 import datetime
 import time
 import re
+import pandas as pd
 
 # PIP imports
 import urllib3
 
 # Application imports
 from obya import Config
+from obya.db.table import data
 
 
 class API():
@@ -47,7 +49,7 @@ class API():
 
         """
         # Get data
-        data = {
+        body = {
             'Password': self._config.api_password,
             'AppVersion': '1',
             'AppComments': '',
@@ -58,7 +60,7 @@ class API():
 
         _api = self._http.request(
             'POST', url,
-            body=json.dumps(data),
+            body=json.dumps(body),
             headers={'Content-Type': 'application/json'}
         )
         result = json.loads(_api.data.decode())
@@ -75,26 +77,35 @@ class API():
             result: Data from API
 
         """
+        # Initialize key variables
+        result = None
+
         # Get URI to query
         url = '{}/{}'.format(self._base_url, uri.lstrip('/'))
 
         # Get data
-        _api = self._http.request(
-            'GET', url,
-            headers={
-                'Session': self.session_key,
-                'UserName': self._config.api_username
-            }
-        )
-        result = json.loads(_api.data.decode())
+        try:
+            _api = self._http.request(
+                'GET', url,
+                headers={
+                    'Session': self.session_key,
+                    'UserName': self._config.api_username
+                }
+            )
+        except:
+            return result
+
+        # Return result
+        if _api.status == 200:
+            result = json.loads(_api.data.decode())
         return result
 
-    def latest(self, pair, seconds, limit=20):
+    def latest(self, pair, timeframe, limit=20):
         """Get latest historical results.
 
         Args:
             pair: Pair to identify
-            seconds: Timeframe to query represented in seconds
+            timeframe: Timeframe to query represented in seconds
             limit: Maximum number of results to return
 
         Returns:
@@ -105,16 +116,16 @@ class API():
         result = None
 
         # Return
-        start = int(time.time()) - (seconds * limit)
-        result = self.historical(pair, seconds, start=start)
+        start = int(time.time()) - (timeframe * limit)
+        result = self.historical(pair, timeframe, start=start)
         return result
 
-    def historical(self, pair, seconds, start=None, stop=None):
+    def historical(self, pair, timeframe, start=None, stop=None):
         """Get historical results.
 
         Args:
             pair: Pair to identify
-            seconds: Timeframe to query represented in seconds
+            timeframe: Timeframe to query represented in seconds
             start: UTC timestamp start
             stop: UTC timestamp stop
 
@@ -129,7 +140,7 @@ class API():
                 tzinfo=timezone.utc).timestamp())
 
         # Get the interval
-        meta = _interval_span(seconds)
+        meta = _interval_span(timeframe)
 
         # Return if timeframe is not found
         if meta.interval is None:
@@ -148,7 +159,8 @@ class API():
 &fromTimestampUTC={}&toTimestampUTC={}\
 '''.format(id_, meta.interval, meta.span, start, stop)
         _result = self.get(uri)
-        result = _convert(_result)
+        if bool(_result) is True:
+            result = _convert(_result)
         return result
 
     def _market_id(self, pair):
@@ -173,21 +185,21 @@ class API():
 market/search?SearchByMarketName=TRUE&Query={}&MaxResults=10'''.format(query)
 
         # Get data
-        data = self.get(uri)
-        results = data.get('Markets')
-        if bool(results) is True:
-            for item in results:
-                if item.get('Name') == cross.upper():
-                    result = item.get('MarketId')
+        results = self.get(uri)
+        markets = results.get('Markets')
+        if bool(markets) is True:
+            for market in markets:
+                if market.get('Name') == cross.upper():
+                    result = market.get('MarketId')
                     break
         return result
 
 
-def _interval_span(seconds):
+def _interval_span(timeframe):
     """Get interval and span for lookup.
 
     Args:
-        seconds: Timeframe to query represented in seconds
+        timeframe: Timeframe to query represented in seconds
 
     Returns:
         result: Meta object
@@ -207,9 +219,9 @@ def _interval_span(seconds):
 
     # Get the interval
     for key, value in sorted(lookup.items(), reverse=True):
-        if not(seconds % key) and seconds >= key:
+        if not(timeframe % key) and timeframe >= key:
             interval = value
-            span = seconds // key
+            span = timeframe // key
             break
 
     # Return
@@ -217,11 +229,11 @@ def _interval_span(seconds):
     return result
 
 
-def _convert(data):
+def _convert(data_):
     """Convert data to be compatible with database.
 
     Args:
-        data: Historical data returned from API
+        data_: Historical data returned from API
 
     Returns:
         result: List of dicts
@@ -229,19 +241,75 @@ def _convert(data):
     """
     # Initialize key variables
     result = []
-    items = data['PriceBars']
 
-    # Get result
-    for item in items:
-        result.append(
-            {
-                'open': item['Open'],
-                'high': item['High'],
-                'low': item['Low'],
-                'close': item['Close'],
-                'timestamp': int(int(
-                    re.match(r'^.*?\((\d+)\).*?$', item['BarDate']).group(1)
-                ) / 1000)
-            }
-        )
+    # Create a DataFrame from the list of dicts in the result
+    items = data_.get('PriceBars')
+    if bool(items) is True:
+        for item in items:
+            result.append(
+                {
+                    'open': item['Open'],
+                    'high': item['High'],
+                    'low': item['Low'],
+                    'close': item['Close'],
+                    'volume': 0,
+                    'timestamp': int(int(
+                        re.match(
+                            r'^.*?\((\d+)\).*?$',
+                            item['BarDate']).group(1)
+                    ) / 1000)
+                }
+            )
+        result = pd.DataFrame(result)
+    else:
+        # Create an empty DataFrame
+        result = pd.DataFrame()
     return result
+
+
+def ingest(secondsago):
+    """Ingest data from the API into the database.
+
+    Args:
+        secondsago: Amount of time to backfill
+
+    Returns:
+        None
+
+    """
+    # Initalize key variables
+    timeframe = 14400
+    batch = 3000
+    config = Config()
+    timestamps = []
+
+    # Calculate start, start
+    stop = int(datetime.datetime.now().replace(
+        tzinfo=timezone.utc).timestamp())
+    start = stop - secondsago
+
+    # Get start and stop times
+    items = list(range(start, stop, timeframe * batch))
+    items.append(stop)
+    for index, value in enumerate(items[:-1]):
+        timestamps.append({'start': value, 'stop': items[index + 1]})
+
+    # Get a list of pairs
+    pairs = config.pairs
+
+    # print(items)
+    # from pprint import pprint
+    # pprint(timestamps)
+    # print(pairs)
+
+    # Ingest data
+    _api = API()
+    for pair in pairs:
+        print('Processing {}'.format(pair))
+        for timestamp in timestamps:
+            df_ = _api.historical(
+                pair,
+                timeframe,
+                start=timestamp['start'],
+                stop=timestamp['stop'])
+            data.insert(pair, df_)

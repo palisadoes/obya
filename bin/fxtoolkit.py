@@ -49,10 +49,11 @@ def main():
 
     # Get data from API data source
     if args.mode == 'api':
-        _api = api.API()
-        result = _api.latest('gbpusd', 3600)
-        from pprint import pprint
-        pprint(result)
+        # _api = api.API()
+        # result = _api.latest('gbpusd', 3600)
+        # from pprint import pprint
+        # pprint(result)
+        api.ingest(args.secondsago)
         # print(api._interval_span(60 * 15))
         sys.exit()
 

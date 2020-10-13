@@ -87,12 +87,22 @@ def _api(subparsers, width=80):
 
     """
     # Initialize key variables
-    subparsers.add_parser(
+    parser = subparsers.add_parser(
         'api',
         help=textwrap.fill(
             'Connect to the obya data source API.', width=width)
     )
 
+    # Process timeframe flag
+    parser.add_argument(
+        '--secondsago',
+        type=int,
+        required=False,
+        default=31536000,
+        help=textwrap.fill(
+            'Number of seconds to use for backfill.', width=width)
+    )
+    
 
 def _email(subparsers, width=80):
     """Process "email" CLI commands.
