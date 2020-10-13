@@ -2,7 +2,7 @@
 
 import json
 from collections import namedtuple
-from datetime import timezone
+import pytz
 import datetime
 import time
 import re
@@ -137,7 +137,7 @@ class API():
         result = None
         if stop is None:
             stop = int(datetime.datetime.now().replace(
-                tzinfo=timezone.utc).timestamp())
+                tzinfo=datetime.timezone.utc).timestamp())
 
         # Get the interval
         meta = _interval_span(timeframe)
@@ -161,6 +161,7 @@ class API():
         _result = self.get(uri)
         if bool(_result) is True:
             result = _convert(_result)
+            result = _utc(result)
         return result
 
     def _market_id(self, pair):
@@ -267,6 +268,31 @@ def _convert(data_):
     return result
 
 
+def _utc(df_, timezone=None):
+    """Convert DataFrame to have UTC timestamps.
+
+    Args:
+        df_: DataFrame
+        timezone: Timezone from which to convert timestamps
+
+    Returns:
+        result: List of dicts
+
+    """
+    # Initialize key variables
+    result = df_.copy()
+    if bool(timezone) is False:
+        timezone = 'Europe/London'
+    tz_ = pytz.timezone(timezone)
+
+    # Convert
+    timestamps = result['timestamp'].tolist()
+    result['timestamp'] = [
+        datetime.datetime.fromtimestamp(_, tz_).replace(
+            tzinfo=datetime.timezone.utc).timestamp() for _ in timestamps]
+    return result
+
+
 def ingest(secondsago):
     """Ingest data from the API into the database.
 
@@ -285,7 +311,7 @@ def ingest(secondsago):
 
     # Calculate start, start
     stop = int(datetime.datetime.now().replace(
-        tzinfo=timezone.utc).timestamp())
+        tzinfo=datetime.timezone.utc).timestamp())
     start = stop - secondsago
 
     # Get start and stop times

@@ -26,7 +26,7 @@ else:
 from tests.libraries.configuration import UnittestConfig
 from tests.libraries import dataset
 from obya import evaluate
-from obya import ingest
+from obya.ingest import files
 
 
 class TestEvaluate(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestEvaluate(unittest.TestCase):
     #########################################################################
     _evaluate = evaluate.Evaluate(
         evaluate.summary(
-            ingest.ingest(
+            files.ingest(
                 '{0}{1}tests{1}data{1}test_ingest_2_years.csv'.format(
                     ROOT_DIR, os.sep)),
             periods=42
@@ -149,7 +149,7 @@ class TestFunctions(unittest.TestCase):
         expected = pd.DataFrame(data=expected_data)
 
         # Test
-        data = ingest.ingest(filepath)
+        data = files.ingest(filepath)
         result = evaluate.evaluate(
             data, periods, k_period=k_period, d_period=d_period).tail()
 

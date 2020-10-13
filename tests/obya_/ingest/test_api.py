@@ -10,8 +10,10 @@ from collections import namedtuple
 # Try to create a working PYTHONPATH
 EXEC_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(
-    os.path.abspath(os.path.join(EXEC_DIR, os.pardir)), os.pardir))
-_EXPECTED = '{0}obya{0}tests{0}obya_'.format(os.sep)
+    os.path.abspath(os.path.join(
+        os.path.abspath(os.path.join(
+            EXEC_DIR, os.pardir)), os.pardir)), os.pardir))
+_EXPECTED = '{0}obya{0}tests{0}obya_{0}ingest'.format(os.sep)
 if EXEC_DIR.endswith(_EXPECTED) is True:
     # We need to prepend the path in case the repo has been installed
     # elsewhere on the system using PIP. This could corrupt expected results
@@ -23,7 +25,7 @@ else:
 
 # Application imports
 from tests.libraries.configuration import UnittestConfig
-from obya import api
+from obya.ingest import api
 
 
 class TestFunctions(unittest.TestCase):

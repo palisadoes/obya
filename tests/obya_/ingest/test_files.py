@@ -9,8 +9,10 @@ import sys
 # Try to create a working PYTHONPATH
 EXEC_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(
-    os.path.abspath(os.path.join(EXEC_DIR, os.pardir)), os.pardir))
-_EXPECTED = '{0}obya{0}tests{0}obya_'.format(os.sep)
+    os.path.abspath(os.path.join(
+        os.path.abspath(os.path.join(
+            EXEC_DIR, os.pardir)), os.pardir)), os.pardir))
+_EXPECTED = '{0}obya{0}tests{0}obya_{0}ingest'.format(os.sep)
 if EXEC_DIR.endswith(_EXPECTED) is True:
     # We need to prepend the path in case the repo has been installed
     # elsewhere on the system using PIP. This could corrupt expected results
@@ -23,7 +25,7 @@ else:
 # Application imports
 from tests.libraries.configuration import UnittestConfig
 from tests.libraries import dataset
-from obya import ingest
+from obya.ingest import files
 
 
 class TestFunctions(unittest.TestCase):
@@ -41,7 +43,7 @@ class TestFunctions(unittest.TestCase):
             ROOT_DIR, os.sep)
 
         # Get results
-        result = ingest.ingest(filepath)
+        result = files.ingest(filepath)
         expected = dataset.dataset()
 
         # Test one column at a time

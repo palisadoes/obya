@@ -21,14 +21,14 @@ else:
 
 
 # Import application libraries
-from obya import api
 from obya import cli
-from obya import ingest
 from obya import evaluate
-from obya import formatter
+from obya import reports
 from obya.db import setup
 from obya.db.table import data
 from obya.db.table import pair
+from obya.ingest import files
+from obya.ingest import api
 
 
 def main():
@@ -54,7 +54,7 @@ def main():
 
     # Ingest data
     if args.mode == 'ingest':
-        df_ = ingest.ingest(args.filename)
+        df_ = files.ingest(args.filename)
         data.insert(args.pair, df_)
         sys.exit()
 
@@ -72,8 +72,8 @@ def main():
     if args.mode == 'email':
         pairs = pair.pairs()
         for pair_ in pairs:
-            if pair_ == 'audjpy':
-                print(_report(pair_, args.timeframe, days=args.days))
+            # if pair_ == 'audjpy':
+            print(_report(pair_, args.timeframe, days=args.days))
         sys.exit()
 
     # Exit
@@ -110,7 +110,7 @@ def _report(_pair, timeframe, days=None):
 
         # Create report
         if result_.empty is False:
-            result = formatter.email(result_)
+            result = reports.email(result_, _pair)
     return result
 
 
