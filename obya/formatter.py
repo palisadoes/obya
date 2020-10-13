@@ -19,5 +19,5 @@ def email(_df):
     df_ = df_.drop(columns=drops.split())
     df_.set_index('date', inplace=True)
     result = df_.to_string()
-    print(result)
+    # print(result)
     return result

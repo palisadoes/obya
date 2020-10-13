@@ -7,7 +7,6 @@ Test
 # Standard imports
 import os
 import sys
-from pprint import pprint
 
 # Try to create a working PYTHONPATH
 _BIN_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -49,12 +48,8 @@ def main():
 
     # Get data from API data source
     if args.mode == 'api':
-        # _api = api.API()
-        # result = _api.latest('gbpusd', 3600)
-        # from pprint import pprint
-        # pprint(result)
-        api.ingest(args.secondsago)
-        # print(api._interval_span(60 * 15))
+        secondsago = args.days * 86400
+        api.ingest(secondsago)
         sys.exit()
 
     # Ingest data
@@ -77,7 +72,8 @@ def main():
     if args.mode == 'email':
         pairs = pair.pairs()
         for pair_ in pairs:
-            print(_report(pair_, args.timeframe, days=args.days))
+            if pair_ == 'audjpy':
+                print(_report(pair_, args.timeframe, days=args.days))
         sys.exit()
 
     # Exit
@@ -98,10 +94,11 @@ def _report(_pair, timeframe, days=None):
     """
     # Initialize key variables
     if bool(days) is False:
-        secondsago = 365 * 24 * 3600
+        secondsago = 365 * 86400
     else:
-        secondsago = 365 * days * 3600
+        secondsago = days * 86400
     result = ''
+    # print(_pair, days, timeframe)
 
     # Process data
     df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)

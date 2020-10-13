@@ -95,14 +95,14 @@ def _api(subparsers, width=80):
 
     # Process timeframe flag
     parser.add_argument(
-        '--secondsago',
+        '--days',
         type=int,
         required=False,
-        default=31536000,
+        default=720,
         help=textwrap.fill(
-            'Number of seconds to use for backfill.', width=width)
+            'Number of days to use for backfill.', width=width)
     )
-    
+
 
 def _email(subparsers, width=80):
     """Process "email" CLI commands.

@@ -6,6 +6,7 @@ import datetime
 
 # PIP3 imports
 import ta
+import pandas as pd
 
 # Appliation imports
 from obya import log
@@ -305,7 +306,7 @@ def recent(_df, secondsago=5184000/2):
 
     """
     # Initialize key variables
-    result = None
+    result = pd.DataFrame()
     df_ = _df.copy()
 
     # Get starting time
