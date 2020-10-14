@@ -182,7 +182,6 @@ def frequency(long_, short_, periods=28, no_zeros=True):
     long = long_.copy()
     short = short_.copy()
     counts = {}
-    column = []
 
     # Count the occurences
     for _, pointer in enumerate(sorted(long.index.tolist())):
@@ -195,8 +194,7 @@ def frequency(long_, short_, periods=28, no_zeros=True):
 
     # Add ocurrences to DataFrame
     if bool(counts) is True:
-        column = counts.values()
-        long['counts'] = column
+        long['counts'] = counts.values()
     else:
         long['counts'] = [0] * len(long)
 
