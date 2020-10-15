@@ -132,13 +132,12 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     # boundary = 604800
     df_ = _df.copy()
 
-    # Get DataFrame
+    # Evaluate DataFrame
     s_eval = Evaluate(df_, k_period=k_period, d_period=d_period)
     s_term = s_eval.either()
 
-    # Get DataFrame using weekly timeframe (42, 4 hour periods)
+    # Evaluate DataFrame by summarizing (ie. `periods` number of periods)
     s_summary = summary(df_, periods=periods)
-    # s_summary = batch(summary_, boundary=boundary)
     l_eval = Evaluate(s_summary, k_period=k_period, d_period=d_period)
     l_term = l_eval.difference(limit=4)
 
