@@ -49,8 +49,12 @@ class Evaluate():
 
         # Return
         if bool(fast) is False:
+            series = df_['d']
+            df_['sequential'] = sequential(series.where(series >= limit, False))
             result = df_.loc[df_['d'] >= limit]
         else:
+            series = df_['k']
+            df_['sequential'] = sequential(series.where(series >= limit, False))
             result = df_.loc[df_['k'] >= limit]
         return result
 
@@ -70,8 +74,12 @@ class Evaluate():
 
         # Return
         if bool(fast) is False:
+            series = df_['d']
+            df_['sequential'] = sequential(series.where(series <= limit, False))
             result = df_.loc[df_['d'] <= limit]
         else:
+            series = df_['k']
+            df_['sequential'] = sequential(series.where(series <= limit, False))
             result = df_.loc[df_['k'] <= limit]
         return result
 
@@ -163,6 +171,7 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     result['delta_l'] = result['k_l'] - result['d_l']
     result['k_s'] = s_term['k']
     result['d_s'] = s_term['d']
+    result['sequential'] = s_term['sequential']
     result['delta_s'] = s_term['k'] - s_term['d']
     result = result.loc[result.index.isin(indexes)]
     result = frequency(result, s_term)
@@ -345,7 +354,7 @@ def sequential(series):
 
     # Create sequential count
     for count in duplicate_count:
-        result.extend([0] * (count - 1))
+        result.extend(range(1, count))
         result.append(count)
 
     return result
