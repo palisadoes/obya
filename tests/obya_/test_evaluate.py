@@ -323,33 +323,6 @@ class TestFunctions(unittest.TestCase):
                 expected[column].tolist()
             )
 
-    def test_batch(self):
-        """Testing function batch."""
-        # Initialize key variables
-        columns = 'open high low close volume timestamp'
-        boundary = 604800
-        expected = pd.DataFrame(
-            data={
-                'open': [87.032],
-                'high': [87.078],
-                'low': [86.731],
-                'close': [86.731],
-                'volume': [5450],
-                'timestamp': [1486756800]
-            }
-        )
-
-        # Test
-        data = dataset.dataset()
-        result = evaluate.batch(data, boundary=boundary)
-
-        # Test one column at a time
-        for column in columns.split():
-            self.assertEqual(
-                result[column].tolist(),
-                expected[column].tolist()
-            )
-
 
 if __name__ == '__main__':
     # Make sure the environment is OK to run unittests

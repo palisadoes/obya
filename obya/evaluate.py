@@ -44,18 +44,11 @@ class Evaluate():
             result: DataFrame
 
         """
-        # Initalize key variables
-        df_ = self._df.copy()
-
         # Return
         if bool(fast) is False:
-            series = df_['d']
-            df_['sequential'] = sequential(series.where(series >= limit, False))
-            result = df_.loc[df_['d'] >= limit]
+            result = self._df.loc[self._df['d'] >= limit]
         else:
-            series = df_['k']
-            df_['sequential'] = sequential(series.where(series >= limit, False))
-            result = df_.loc[df_['k'] >= limit]
+            result = self._df.loc[self._df['k'] >= limit]
         return result
 
     def below(self, limit=10, fast=True):
@@ -69,18 +62,11 @@ class Evaluate():
             result: DataFrame
 
         """
-        # Initalize key variables
-        df_ = self._df.copy()
-
         # Return
         if bool(fast) is False:
-            series = df_['d']
-            df_['sequential'] = sequential(series.where(series <= limit, False))
-            result = df_.loc[df_['d'] <= limit]
+            result = self._df.loc[self._df['d'] <= limit]
         else:
-            series = df_['k']
-            df_['sequential'] = sequential(series.where(series <= limit, False))
-            result = df_.loc[df_['k'] <= limit]
+            result = self._df.loc[self._df['k'] <= limit]
         return result
 
     def difference(self, limit=1):
@@ -144,7 +130,6 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     # Initialize key variables
     k_period = 35
     d_period = 5
-    # boundary = 604800
     df_ = _df.copy()
 
     # Evaluate DataFrame
@@ -271,39 +256,6 @@ def summary(_df, periods=5):
     df_['volume'] = df_['volume'].rolling(periods).sum()
     df_['open'] = df_['open'].shift(periods - 1)
     result = df_[periods - 1:]
-    return result
-
-
-def batch(_df, boundary=604800):
-    """Get DataFrame entries on a timestamp boundary.
-
-    Args:
-        _df: pd.DataFrame
-        boundary: Timestamp boundary
-
-    Returns:
-        result: Modified DataFrame
-
-    """
-    # Initialize key variables
-    df_ = _df.copy()
-
-    # Apply offset to account for the fact that epoch time is calculated from
-    # midnight, 1/1/1970 which was a Thursday. Weekly day boundaries are
-    # calculated starting at midnight, Sunday.
-    offset = 259200
-
-    if boundary == 604800:
-        # Apply offset to account for the fact that epoch time is calculated
-        # from midnight, 1/1/1970 which was a Thursday. Four hour week
-        # boundaries are calculated ending at 20:00, friday.
-        offset = 158400
-    else:
-        log_message = 'Boundary value {} is not valid'.format(boundary)
-        log.log2die(1012, log_message)
-
-    # Return
-    result = df_.loc[((df_['timestamp'] - offset) % boundary) == 0]
     return result
 
 
