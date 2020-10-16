@@ -3,6 +3,7 @@
 # Standard imports
 from datetime import timezone
 import datetime
+from itertools import groupby
 
 # PIP3 imports
 import ta
@@ -43,11 +44,14 @@ class Evaluate():
             result: DataFrame
 
         """
+        # Initalize key variables
+        df_ = self._df.copy()
+
         # Return
         if bool(fast) is False:
-            result = self._df.loc[self._df['d'] >= limit]
+            result = df_.loc[df_['d'] >= limit]
         else:
-            result = self._df.loc[self._df['k'] >= limit]
+            result = df_.loc[df_['k'] >= limit]
         return result
 
     def below(self, limit=10, fast=True):
@@ -61,11 +65,14 @@ class Evaluate():
             result: DataFrame
 
         """
+        # Initalize key variables
+        df_ = self._df.copy()
+
         # Return
         if bool(fast) is False:
-            result = self._df.loc[self._df['d'] <= limit]
+            result = df_.loc[df_['d'] <= limit]
         else:
-            result = self._df.loc[self._df['k'] <= limit]
+            result = df_.loc[df_['k'] <= limit]
         return result
 
     def difference(self, limit=1):
@@ -314,5 +321,31 @@ def recent(_df, secondsago=5184000/2):
     if df_.empty is False:
         # Drop all rows that are older than days
         result = df_.loc[df_['timestamp'] >= start]
+
+    return result
+
+
+def sequential(series):
+    """Return a list of occurences in a series.
+
+    Args:
+        series: pd.series of True / False values
+
+    Returns:
+        result: List of sequential occurences
+
+    """
+    # Initalize key variables
+    result = []
+
+    # Create list of occurences
+    occurences = [int(bool(_) is True) for _ in series.tolist()]
+    duplicate_count = [
+        sum(1 for _ in group) for _, group in groupby(occurences)]
+
+    # Create sequential count
+    for count in duplicate_count:
+        result.extend([0] * (count - 1))
+        result.append(count)
 
     return result
