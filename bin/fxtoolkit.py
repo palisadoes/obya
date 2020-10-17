@@ -45,6 +45,7 @@ def main():
     parse = cli.Parser()
     parser = parse.parser()
     args = parser.parse_args()
+    report = ''
 
     # Get data from API data source
     if args.mode == 'api':
@@ -73,7 +74,9 @@ def main():
         pairs = pair.pairs()
         for pair_ in pairs:
             # if pair_ == 'audjpy':
-            print(_report(pair_, args.timeframe, days=args.days))
+            report = '{}\n{}'.format(
+                report, _report(pair_, args.timeframe, days=args.days)).strip()
+        print(report)
         sys.exit()
 
     # Exit
