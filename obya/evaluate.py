@@ -205,18 +205,50 @@ class Evaluate():
         # Merge both DataFrames where they don't share index values
         df1 = self.above(above, fast=True)
         df2 = self.above(above, fast=False)
-        _above = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
+        _above = _min_sequential(df1, df2)
 
         # Merge both DataFrames where they don't share index values
         df1 = self.below(below, fast=True)
         df2 = self.below(below, fast=False)
-        _below = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
+        _below = _min_sequential(df1, df2)
 
         # Merge above and below
         result = pd.concat([_above, _below])
 
         # Return
         return result
+
+
+def _min_sequential(df1, df2):
+    """Create merged DataFrame with only rows of minium 'sequential' values.
+
+    Args:
+        df1: First DataFrame
+        df2: Second DataFrame
+
+    Returns:
+        result: DataFrame that matches criteria
+
+    """
+    # Merge missing values from on DataFrame into the other.
+    # They will both have the same indexes after this operation.
+    merged_1 = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
+    merged_2 = pd.concat([df2, df1[~df1.index.isin(df2.index)]])
+
+    # Extract the 'sequential' values while maintaining the DataFrame indexes
+    s_1 = pd.Series(merged_1['sequential'].tolist(), index=[merged_1.index])
+    s_2 = pd.Series(merged_2['sequential'].tolist(), index=[merged_2.index])
+
+    # Create pd.Series of the minimum 'sequential' values in each DataFrame
+    escrow = pd.DataFrame(index=s_1.index)
+    escrow['s_1'] = s_1
+    escrow['s_2'] = s_2
+    minima = escrow.min(axis=1)
+
+    # Replace 'sequential' column with minima and return
+    merged_1['sequential'] = minima.tolist()
+    result = merged_1.copy()
+    return result
 
 
 def evaluate(_df, periods, k_period=35, d_period=5):
