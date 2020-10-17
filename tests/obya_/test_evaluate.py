@@ -55,11 +55,13 @@ class TestEvaluate(unittest.TestCase):
 
         # Test Fast
         result = self._evaluate.above(limit, fast=True)
+        self.assertFalse(result.empty)
         for item in result['k'].tolist():
             self.assertTrue(item > limit)
 
         # Test slow
         result = self._evaluate.above(limit, fast=False)
+        self.assertFalse(result.empty)
         for item in result['d'].tolist():
             self.assertTrue(item > limit)
 
@@ -70,11 +72,13 @@ class TestEvaluate(unittest.TestCase):
 
         # Test Fast
         result = self._evaluate.below(limit, fast=True)
+        self.assertFalse(result.empty)
         for item in result['k'].tolist():
             self.assertTrue(item < limit)
 
         # Test slow
         result = self._evaluate.below(limit, fast=False)
+        self.assertFalse(result.empty)
         for item in result['d'].tolist():
             self.assertTrue(item < limit)
 
@@ -152,6 +156,8 @@ class TestFunctions(unittest.TestCase):
         data = files.ingest(filepath)
         result = evaluate.evaluate(
             data, periods, k_period=k_period, d_period=d_period).tail()
+
+        print(result.to_dict())
 
         # Test one column at a time
         for column, _ in expected_data.items():

@@ -9,8 +9,120 @@ from itertools import groupby
 import ta
 import pandas as pd
 
-# Appliation imports
-from obya import log
+
+class Either():
+    """Class to evaluate dataframe."""
+
+    def __init__(self, _df, limit=90, greater=True):
+        """Initialize the class.
+
+        Args:
+            _df: stochastic pd.DataFrame
+            limit: Value above/below which we care
+            greater: Limit is above, if True
+
+        Returns:
+            None
+
+        """
+        # Initalize key variables
+        self._df = _df
+        self._limit = limit
+        self._greater = bool(greater)
+
+    @property
+    def fast(self):
+        """Get DataFrame rows where fast Stochastic is greater than a value.
+
+        Args:
+            None
+
+        Returns:
+            result: DataFrame
+
+        """
+        # Return
+        result = self._process('k')
+        return result
+
+    @property
+    def slow(self):
+        """Get DataFrame rows where slow Stochastic is greater than a value.
+
+        Args:
+            None
+
+        Returns:
+            result: DataFrame
+
+        """
+        # Return
+        result = self._process('d')
+        return result
+
+    def _process(self, column):
+        """Get DataFrame rows where fast Stochastic is greater than a value.
+
+        Args:
+            None
+
+        Returns:
+            result: DataFrame
+
+        """
+        # Initalize key variables
+        _df = self._df.copy()
+        series = _df[column]
+
+        # Find matches
+        if self._greater is True:
+            matches = series.where(series >= self._limit, other=False)
+            _df['sequential'] = sequential(matches)
+            result = _df.loc[series >= self._limit]
+
+        else:
+            matches = series.where(series <= self._limit, other=False)
+            _df['sequential'] = sequential(matches)
+            result = _df.loc[series <= self._limit]
+
+        # Return
+        return result
+
+
+class Above(Either):
+    """Class to evaluate dataframe."""
+
+    def __init__(self, _df, limit=90):
+        """Initialize the class.
+
+        Args:
+            _df: stochastic pd.DataFrame
+            limit: Value above which we care
+
+        Returns:
+            None
+
+        """
+        # Initalize key variables
+        Either.__init__(self, _df, limit=limit, greater=True)
+
+
+class Below(Either):
+    """Class to evaluate dataframe."""
+
+    def __init__(self, _df, limit=90):
+        """Initialize the class.
+
+        Args:
+            _df: stochastic pd.DataFrame
+            limit: Value below which we care
+
+        Returns:
+            None
+
+        """
+        # Initalize key variables
+        Either.__init__(self, _df, limit=limit, greater=False)
 
 
 class Evaluate():
@@ -45,10 +157,8 @@ class Evaluate():
 
         """
         # Return
-        if bool(fast) is False:
-            result = self._df.loc[self._df['d'] >= limit]
-        else:
-            result = self._df.loc[self._df['k'] >= limit]
+        _above = Above(self._df, limit=limit)
+        result = _above.fast if bool(fast) else _above.slow
         return result
 
     def below(self, limit=10, fast=True):
@@ -63,10 +173,8 @@ class Evaluate():
 
         """
         # Return
-        if bool(fast) is False:
-            result = self._df.loc[self._df['d'] <= limit]
-        else:
-            result = self._df.loc[self._df['k'] <= limit]
+        _below = Below(self._df, limit=limit)
+        result = _below.fast if bool(fast) else _below.slow
         return result
 
     def difference(self, limit=1):
@@ -94,22 +202,20 @@ class Evaluate():
             result: DataFrame that matches criteria
 
         """
-        # Initialize key variables
-        matches_ = {}
+        # Merge both DataFrames where they don't share index values
+        df1 = self.above(above, fast=True)
+        df2 = self.above(above, fast=False)
+        _above = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
 
-        # Get index values where the Stochastic indicators
-        # exceed the desired limits
-        for fast in [True, False]:
-            for item in self.above(above, fast=fast).index.tolist():
-                matches_[item] = None
-            for item in self.below(below, fast=fast).index.tolist():
-                matches_[item] = None
+        # Merge both DataFrames where they don't share index values
+        df1 = self.below(below, fast=True)
+        df2 = self.below(below, fast=False)
+        _below = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
 
-        # Get the indexes with matches in both cases
-        indexes = tuple(sorted(matches_.keys()))
+        # Merge above and below
+        result = pd.concat([_above, _below])
 
         # Return
-        result = self._df[self._df.index.isin(indexes)]
         return result
 
 
@@ -128,8 +234,6 @@ def evaluate(_df, periods, k_period=35, d_period=5):
 
     """
     # Initialize key variables
-    k_period = 35
-    d_period = 5
     df_ = _df.copy()
 
     # Evaluate DataFrame
