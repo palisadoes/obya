@@ -93,7 +93,7 @@ def _api(subparsers, width=80):
             'Connect to the obya data source API.', width=width)
     )
 
-    # Process timeframe flag
+    # Process days flag
     parser.add_argument(
         '--days',
         type=int,
@@ -103,6 +103,12 @@ def _api(subparsers, width=80):
             'Number of days to use for backfill.', width=width)
     )
 
+    # Process verbose flag
+    parser.add_argument(
+        '--verbose',
+        help='Verbose progress reporting.',
+        action='store_true')
+        
 
 def _email(subparsers, width=80):
     """Process "email" CLI commands.

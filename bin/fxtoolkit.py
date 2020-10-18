@@ -50,7 +50,7 @@ def main():
     # Get data from API data source
     if args.mode == 'api':
         secondsago = args.days * 86400
-        api.ingest(secondsago)
+        api.ingest(secondsago, verbose=args.verbose)
         sys.exit()
 
     # Ingest data
@@ -73,7 +73,6 @@ def main():
     if args.mode == 'email':
         pairs = pair.pairs()
         for pair_ in pairs:
-            # if pair_ == 'audjpy':
             report = '{}\n{}'.format(
                 report, _report(pair_, args.timeframe, days=args.days)).strip()
         print(report)
@@ -101,7 +100,6 @@ def _report(_pair, timeframe, days=None):
     else:
         secondsago = days * 86400
     result = ''
-    # print(_pair, days, timeframe)
 
     # Process data
     df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)

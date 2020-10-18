@@ -293,11 +293,12 @@ def _utc(df_, timezone=None):
     return result
 
 
-def ingest(secondsago):
+def ingest(secondsago, verbose=False):
     """Ingest data from the API into the database.
 
     Args:
         secondsago: Amount of time to backfill
+        verbose: Verbose output if true
 
     Returns:
         None
@@ -323,15 +324,14 @@ def ingest(secondsago):
     # Get a list of pairs
     pairs = config.pairs
 
-    # print(items)
-    # from pprint import pprint
-    # pprint(timestamps)
-    # print(pairs)
-
     # Ingest data
     _api = API()
     for pair in pairs:
-        print('Processing {}'.format(pair))
+        # Reporting
+        if bool(verbose) is True:
+            print('Processing {}'.format(pair))
+
+        # Process data
         for timestamp in timestamps:
             df_ = _api.historical(
                 pair,
