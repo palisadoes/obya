@@ -108,7 +108,7 @@ def _api(subparsers, width=80):
         '--verbose',
         help='Verbose progress reporting.',
         action='store_true')
-        
+
 
 def _email(subparsers, width=80):
     """Process "email" CLI commands.
@@ -141,9 +141,10 @@ def _email(subparsers, width=80):
     parser.add_argument(
         '--days',
         type=int,
-        default=1,
-        help=textwrap.fill(
-            'Number of days to include in the report.', width=width)
+        default=90,
+        help=textwrap.fill('''\
+Number of days to include in the report. Data is always processed from the \
+first day of available data.''', width=width)
     )
 
 
@@ -188,8 +189,9 @@ def _evaluate(subparsers, width=80):
         '--days',
         type=int,
         default=None,
-        help=textwrap.fill(
-            'Number of days to include in the report.', width=width)
+        help=textwrap.fill('''\
+Number of days to include in the report. Data is always processed from the \
+first day of available data.''', width=width)
     )
 
 

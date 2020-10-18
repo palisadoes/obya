@@ -3,8 +3,35 @@
 import datetime
 
 # Application imports
+from obya.db.table import pair
 from obya.db.table import data
 from obya import evaluate
+
+
+def reports(timeframe, days=None, width=60):
+    """Create reports.
+
+    Args:
+        timeframe: Timeframe
+        days: Age of report in days
+
+    Returns:
+        result: String report
+
+    """
+    # Initialize key variables
+    output = []
+
+    # Create report
+    pairs = pair.pairs()
+    for pair_ in sorted(pairs):
+        report_ = report(pair_, timeframe, days=days)
+        if bool(report_) is True:
+            output.append(report_)
+
+    # Return
+    result = '\n\n{}\n'.format('-' * width).join(output)
+    return result
 
 
 def report(_pair, timeframe, days=None):
@@ -27,7 +54,7 @@ def report(_pair, timeframe, days=None):
     result = ''
 
     # Process data
-    df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
+    df_ = data.dataframe(_pair, timeframe, secondsago=None)
     if df_.empty is False:
         result_ = evaluate.evaluate(df_, 29)
 
@@ -53,13 +80,13 @@ def formatter(_df, _pair):
     """
     # Initialize key variables
     result = ''
-    drops = 'timestamp open high low close volume delta_s'
+    drops = 'timestamp open high low close volume Δ_s'
     rounding = {
         'k_l': 2,
         'd_l': 2,
         'k_s': 2,
         'd_s': 2,
-        'delta_l': 2,
+        'Δ_l': 2,
     }
     secondsago = 3600 * 24 * 7
     df_ = _df.copy()
@@ -72,20 +99,21 @@ def formatter(_df, _pair):
     # Process
     if df_.empty is False:
         # Create heading for the _pair
-        result = '\n{}\n\n{}\n'.format('-' * 80, _pair.upper())
+        result = '{}\n'.format(_pair.upper())
 
         # Create 'star' column
         timestamp = df_['timestamp']
         filtered = timestamp.where(timestamp > start, other='').tolist()
-        df_['star'] = ['*' if bool(_) is True else '' for _ in filtered]
+        df_[''] = ['*' if bool(_) is True else '' for _ in filtered]
 
         # Round columns
         df_ = df_.round(rounding)
 
         # Rename columns
-        df_ = df_.rename(columns={
-            'sequential': 'seq',
-            'counts': 'cnt'
+        df_ = df_.rename(
+            columns={
+                'sequential': 'seq',
+                'counts': 'cnt'
             }
         )
 

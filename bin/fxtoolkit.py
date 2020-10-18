@@ -66,18 +66,13 @@ def main():
 
     # Evaluate data
     if args.mode == 'evaluate':
-        print(reports.report(args.pair, args.timeframe, days=args.days))
+        report = reports.report(args.pair, args.timeframe, days=args.days)
+        print(report)
         sys.exit()
 
     # Email data
     if args.mode == 'email':
-        pairs = pair.pairs()
-        for pair_ in sorted(pairs):
-            report = (
-                '{}\n{}'.format(
-                    report,
-                    reports.report(
-                        pair_, args.timeframe, days=args.days)).strip())
+        report = reports.reports(args.timeframe, days=args.days)
         print(report)
         sys.exit()
 

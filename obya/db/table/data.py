@@ -95,9 +95,10 @@ def dataframe(pair_, timeframe, secondsago=None):
     rows = []
     columns = 'timestamp date open high low close volume'
     df_ = None
+    start = 0
 
     # Get starting time
-    if secondsago is not None and isinstance(secondsago, (int, float)):
+    if bool(secondsago) is True and isinstance(secondsago, (int, float)):
         # Get current UTC timestamp
         now = datetime.datetime.now().replace(tzinfo=timezone.utc).timestamp()
         start = now - abs(secondsago)

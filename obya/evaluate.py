@@ -289,8 +289,8 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     # Filter DataFrame by indexes
     result = l_term.copy()
     result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
-    result['delta_l'] = result['k_l'] - result['d_l']
-    result['delta_s'] = s_term['k'] - s_term['d']
+    result['Δ_l'] = result['k_l'] - result['d_l']
+    result['Δ_s'] = s_term['k'] - s_term['d']
     result['k_s'] = s_term['k']
     result['d_s'] = s_term['d']
     result['sequential'] = s_term['sequential']
