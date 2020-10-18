@@ -5,6 +5,7 @@
 import unittest
 import os
 import sys
+from operator import itemgetter
 
 import pandas as pd
 
@@ -27,6 +28,322 @@ from tests.libraries.configuration import UnittestConfig
 from tests.libraries import dataset
 from obya import evaluate
 from obya.ingest import files
+
+
+class TestEither(unittest.TestCase):
+    """Checks all functions and methods."""
+
+    def test___init__(self):
+        """Testing function __init__."""
+        pass
+
+    def test_fast(self):
+        """Testing function fast."""
+        pass
+
+    def test_slow(self):
+        """Testing function slow."""
+        pass
+
+    def test__process(self):
+        """Testing function _process."""
+        pass
+
+
+class TestAbove(unittest.TestCase):
+    """Checks all functions and methods."""
+
+    #########################################################################
+    # General object setup
+    #########################################################################
+
+    df = evaluate.stoch(
+        evaluate.summary(
+            files.ingest(
+                '{0}{1}tests{1}data{1}test_ingest_2_years.csv'.format(
+                    ROOT_DIR, os.sep)),
+            periods=42
+        )
+    )
+
+    def test___init__(self):
+        """Testing function __init__."""
+        pass
+
+    def test_fast(self):
+        """Testing function fast."""
+        # Initalize key variables
+        limit = 99.85
+
+        expected = [
+            {
+                'close': 76.072,
+                'd': 95.32805956258748,
+                'high': 76.072,
+                'k': 100.0,
+                'low': 74.842,
+                'open': 75.316,
+                'sequential': 1.0,
+                'timestamp': 1577361600.0,
+                'volume': 461569.0},
+            {
+                'close': 76.154,
+                'd': 97.55385459885271,
+                'high': 76.156,
+                'k': 99.91445680068394,
+                'low': 74.842,
+                'open': 75.214,
+                'sequential': 2.0,
+                'timestamp': 1577376000.0,
+                'volume': 455266.0},
+            {
+                'close': 69.605,
+                'd': 95.89611795590197,
+                'high': 69.608,
+                'k': 99.8709122203098,
+                'low': 67.284,
+                'open': 68.583,
+                'sequential': 1.0,
+                'timestamp': 1588118400.0,
+                'volume': 636298.0},
+            {
+                'close': 71.114,
+                'd': 84.81680956998703,
+                'high': 71.117,
+                'k': 99.88349514563106,
+                'low': 68.572,
+                'open': 68.75,
+                'sequential': 1.0,
+                'timestamp': 1590465600.0,
+                'volume': 487421.0}
+            ]
+
+        # Get data
+        above = evaluate.Above(self.df, limit=limit)
+        result_ = above.fast
+
+        # Test
+        result = list(result_.T.to_dict().values())
+        self.assertEqual(result, expected)
+
+    def test_slow(self):
+        """Testing function slow."""
+        # Initalize key variables
+        limit = 98.4
+
+        expected = [
+            {
+                'close': 73.643,
+                'd': 98.48676926683488,
+                'high': 73.651,
+                'k': 99.78384220480963,
+                'low': 71.085,
+                'open': 71.697,
+                'sequential': 1.0,
+                'timestamp': 1568030400.0,
+                'volume': 811320.0},
+            {
+                'close': 73.569,
+                'd': 98.42765215417081,
+                'high': 73.658,
+                'k': 97.59978425026972,
+                'low': 71.085,
+                'open': 71.509,
+                'sequential': 2.0,
+                'timestamp': 1568044800.0,
+                'volume': 810805.0},
+            {
+                'close': 73.668,
+                'd': 98.49321305481887,
+                'high': 73.694,
+                'k': 99.30555555555566,
+                'low': 71.085,
+                'open': 71.566,
+                'sequential': 3.0,
+                'timestamp': 1568059200.0,
+                'volume': 801402.0},
+            {
+                'close': 74.944,
+                'd': 98.45249701019864,
+                'high': 74.966,
+                'k': 99.65592743196761,
+                'low': 70.191,
+                'open': 70.52,
+                'sequential': 1.0,
+                'timestamp': 1591128000.0,
+                'volume': 597115.0},
+            {
+                'close': 75.569,
+                'd': 99.07275107362229,
+                'high': 75.665,
+                'k': 98.64655293951779,
+                'low': 70.215,
+                'open': 70.384,
+                'sequential': 2.0,
+                'timestamp': 1591142400.0,
+                'volume': 601706.0}
+            ]
+
+        # Get data
+        above = evaluate.Above(self.df, limit=limit)
+        result_ = above.slow
+
+        # Test
+        result = list(result_.T.to_dict().values())
+        self.assertEqual(result, expected)
+
+
+class TestBelow(unittest.TestCase):
+    """Checks all functions and methods."""
+
+    #########################################################################
+    # General object setup
+    #########################################################################
+
+    df = evaluate.stoch(
+        evaluate.summary(
+            files.ingest(
+                '{0}{1}tests{1}data{1}test_ingest_2_years.csv'.format(
+                    ROOT_DIR, os.sep)),
+            periods=42
+        )
+    )
+
+    def test___init__(self):
+        """Testing function __init__."""
+        pass
+
+    def test_fast(self):
+        """Testing function fast."""
+        # Initalize key variables
+        limit = 0.4
+
+        expected = [
+            {
+                'close': 78.179,
+                'd': 15.365495624313136,
+                'high': 79.641,
+                'k': 0.12254901960755822,
+                'low': 78.177,
+                'open': 79.515,
+                'sequential': 1.0,
+                'timestamp': 1551974400.0,
+                'volume': 726819.0},
+            {
+                'close': 71.802,
+                'd': 7.286698618858651,
+                'high': 73.365,
+                'k': 0.20072260136530165,
+                'low': 71.797,
+                'open': 72.746,
+                'sequential': 1.0,
+                'timestamp': 1570017600.0,
+                'volume': 762582.0},
+            {
+                'close': 73.544,
+                'd': 6.270072812073204,
+                'high': 75.665,
+                'k': 0.14124293785311207,
+                'low': 73.541,
+                'open': 75.262,
+                'sequential': 1.0,
+                'timestamp': 1573732800.0,
+                'volume': 624713.0},
+            {
+                'close': 73.991,
+                'd': 12.536208966162807,
+                'high': 76.238,
+                'k': 0.1776988005333132,
+                'low': 73.987,
+                'open': 75.934,
+                'sequential': 1.0,
+                'timestamp': 1580076000.0,
+                'volume': 533561.0},
+            {
+                'close': 64.073,
+                'd': 9.177950859497836,
+                'high': 70.049,
+                'k': 0.36217303822919944,
+                'low': 64.046,
+                'open': 69.837,
+                'sequential': 1.0,
+                'timestamp': 1584432000.0,
+                'volume': 1332995.0}
+            ]
+
+        # Get data
+        below = evaluate.Below(self.df, limit=limit)
+        result_ = below.fast
+
+        # Test
+        result = list(result_.T.to_dict().values())
+        self.assertEqual(result, expected)
+
+    def test_slow(self):
+        """Testing function slow."""
+        # Initalize key variables
+        limit = 3
+
+        expected = [
+            {
+                'close': 73.979,
+                'd': 1.402334911610705,
+                'high': 76.0,
+                'k': 0.7367387033399095,
+                'low': 73.964,
+                'open': 75.718,
+                'sequential': 1.0,
+                'timestamp': 1560830400.0,
+                'volume': 686017.0},
+            {
+                'close': 74.082,
+                'd': 2.51166407738639,
+                'high': 76.0,
+                'k': 7.655272026961577,
+                'low': 73.923,
+                'open': 75.685,
+                'sequential': 2.0,
+                'timestamp': 1560844800.0,
+                'volume': 691036.0},
+            {
+                'close': 73.649,
+                'd': 2.618728683322854,
+                'high': 76.159,
+                'k': 4.288354898336404,
+                'low': 73.533,
+                'open': 76.123,
+                'sequential': 1.0,
+                'timestamp': 1580155200.0,
+                'volume': 543623.0},
+            {
+                'close': 72.532,
+                'd': 2.2475757990867375,
+                'high': 75.358,
+                'k': 3.3133315940515367,
+                'low': 72.405,
+                'open': 75.309,
+                'sequential': 1.0,
+                'timestamp': 1580680800.0,
+                'volume': 645049.0},
+            {
+                'close': 72.646,
+                'd': 2.983186048301978,
+                'high': 75.358,
+                'k': 6.287503261153137,
+                'low': 72.405,
+                'open': 75.292,
+                'sequential': 2.0,
+                'timestamp': 1580688000.0,
+                'volume': 654566.0}
+            ]
+
+        # Get data
+        below = evaluate.Below(self.df, limit=limit)
+        result_ = below.slow
+
+        # Test
+        result = list(result_.T.to_dict().values())
+        self.assertEqual(result, expected)
 
 
 class TestEvaluate(unittest.TestCase):
@@ -133,40 +450,37 @@ class TestFunctions(unittest.TestCase):
             ROOT_DIR, os.sep)
 
         expected_data = {
-            'index': [2657, 2666, 2669, 2671, 2672],
-            'open': [76.959, 77.528, 78.027, 78.141, 78.028],
-            'high': [77.95, 78.45, 78.45, 78.354, 78.326],
-            'low': [76.776, 77.403, 78.008, 78.007, 78.007],
-            'close': [77.81, 78.194, 78.233, 78.191, 78.206],
-            'volume': [73970, 60312, 58036, 64416, 77026],
-            'timestamp': [
-                1598587200, 1598889600, 1598932800, 1598961600, 1598976000],
-            'k_l': [94.052676, 91.030133, 92.396636, 90.189394, 90.757576],
-            'd_l': [94.626981, 91.223783, 90.83075, 88.427949, 89.018147],
-            'delta_l': [-0.574305, -0.19365, 1.565887, 1.761445, 1.739429],
-            'k_s': [94.052676, 91.030133, 91.780303, 90.189394, 90.6298],
-            'd_s': [94.626981, 91.223783, 90.360365, 87.862439, 88.535051],
-            'delta_s': [-0.574305, -0.19365, 1.419938, 2.326955, 2.094749],
-            'counts': [11, 14, 17, 18, 18]
+            'close': {2566: 76.352, 2655: 77.346},
+            'counts': {2566: 7, 2655: 6},
+            'd_l': {2566: 89.22393014361, 2655: 90.0327966129483},
+            'd_s': {2566: 93.16129032258061, 2655: 88.03735941877359},
+            'delta_l': {2566: 0.5825214692939511, 2655: 1.6818178864760114},
+            'delta_s': {2566: -3.354838709676656, 2655: 2.9513765011260205},
+            'high': {2566: 76.431, 2655: 77.418},
+            'k_l': {2566: 89.80645161290396, 2655: 91.71461449942431},
+            'k_s': {2566: 89.80645161290396, 2655: 90.98873591989961},
+            'low': {2566: 75.656, 2655: 76.662},
+            'open': {2566: 75.909, 2655: 76.683},
+            'sequential': {2566: 1.0, 2655: 1.0},
+            'timestamp': {2566: 1596758400.0, 2655: 1598558400.0},
+            'volume': {2566: 60664.0, 2655: 71270.0}
         }
+        expected_ = pd.DataFrame(data=expected_data)
 
-        expected = pd.DataFrame(data=expected_data)
+        # Get data
+        data = files.ingest(filepath)
+        result_ = evaluate.evaluate(
+            data, periods, k_period=k_period, d_period=d_period).tail(2)
 
         # Test
-        data = files.ingest(filepath)
-        result = evaluate.evaluate(
-            data, periods, k_period=k_period, d_period=d_period).tail()
+        result = sorted(
+            list(result_.T.to_dict().values()),
+            key=itemgetter('timestamp'))
+        expected = sorted(
+            list(expected_.T.to_dict().values()),
+            key=itemgetter('timestamp'))
 
-        print(result.to_dict())
-
-        # Test one column at a time
-        for column, _ in expected_data.items():
-            if column == 'index':
-                continue
-            self.assertEqual(
-                result[column].astype(float).round(3).tolist(),
-                expected[column].astype(float).round(3).tolist()
-            )
+        self.assertEqual(result, expected)
 
     def test_frequency(self):
         """Testing function frequency."""
@@ -328,6 +642,29 @@ class TestFunctions(unittest.TestCase):
                 result[column].tolist(),
                 expected[column].tolist()
             )
+
+    def test_recent(self):
+        """Testing function recent."""
+        pass
+
+    def test_sequential(self):
+        """Testing function sequential."""
+        # Initialize key values
+        values = [
+            False, False, False, True, False,
+            True, False, True, True, True,
+            True, True, False, False, True,
+            False, False, False, False, False
+        ]
+
+        expected = [
+            1, 2, 3, 1, 1,
+            1, 1, 1, 2, 3,
+            4, 5, 1, 2, 1,
+            1, 2, 3, 4, 5]
+
+        result = evaluate.sequential(pd.Series(values))
+        self.assertEqual(result, expected)
 
 
 if __name__ == '__main__':

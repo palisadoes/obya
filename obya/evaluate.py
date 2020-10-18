@@ -11,7 +11,7 @@ import pandas as pd
 
 
 class Either():
-    """Class to evaluate dataframe."""
+    """Class to identify dataframe stochastic values beyond a limit."""
 
     def __init__(self, _df, limit=90, greater=True):
         """Initialize the class.
@@ -90,7 +90,7 @@ class Either():
 
 
 class Above(Either):
-    """Class to evaluate dataframe."""
+    """Class to identify dataframe stochastic values above a limit."""
 
     def __init__(self, _df, limit=90):
         """Initialize the class.
@@ -108,7 +108,7 @@ class Above(Either):
 
 
 class Below(Either):
-    """Class to evaluate dataframe."""
+    """Class to identify dataframe stochastic values below a limit."""
 
     def __init__(self, _df, limit=90):
         """Initialize the class.
@@ -290,10 +290,10 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     result = l_term.copy()
     result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
     result['delta_l'] = result['k_l'] - result['d_l']
+    result['delta_s'] = s_term['k'] - s_term['d']
     result['k_s'] = s_term['k']
     result['d_s'] = s_term['d']
     result['sequential'] = s_term['sequential']
-    result['delta_s'] = s_term['k'] - s_term['d']
     result = result.loc[result.index.isin(indexes)]
     result = frequency(result, s_term)
     return result
