@@ -66,53 +66,23 @@ def main():
 
     # Evaluate data
     if args.mode == 'evaluate':
-        print(_report(args.pair, args.timeframe, days=args.days))
+        print(reports.report(args.pair, args.timeframe, days=args.days))
         sys.exit()
 
     # Email data
     if args.mode == 'email':
         pairs = pair.pairs()
-        for pair_ in pairs:
-            report = '{}\n{}'.format(
-                report, _report(pair_, args.timeframe, days=args.days)).strip()
+        for pair_ in sorted(pairs):
+            report = (
+                '{}\n{}'.format(
+                    report,
+                    reports.report(
+                        pair_, args.timeframe, days=args.days)).strip())
         print(report)
         sys.exit()
 
     # Exit
     parser.print_help()
-
-
-def _report(_pair, timeframe, days=None):
-    """Create reports.
-
-    Args:
-        _pair: Pair to Evaluate
-        timeframe: Timeframe
-        days: Age of report in days
-
-    Returns:
-        result: String report
-
-    """
-    # Initialize key variables
-    if bool(days) is False:
-        secondsago = 365 * 86400
-    else:
-        secondsago = days * 86400
-    result = ''
-
-    # Process data
-    df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
-    if df_.empty is False:
-        result_ = evaluate.evaluate(df_, 29)
-
-        # Drop all rows that are older than days
-        result_ = evaluate.recent(result_, secondsago=secondsago)
-
-        # Create report
-        if result_.empty is False:
-            result = reports.email(result_, _pair)
-    return result
 
 
 if __name__ == '__main__':

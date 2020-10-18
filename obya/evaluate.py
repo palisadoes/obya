@@ -391,7 +391,13 @@ def summary(_df, periods=5):
     df_['high'] = df_['high'].rolling(periods).max()
     df_['volume'] = df_['volume'].rolling(periods).sum()
     df_['open'] = df_['open'].shift(periods - 1)
+
+    # Trim NaNs
     result = df_[periods - 1:]
+
+    # Get every `period` row and reverse sort the index to
+    # mimic the original ordering
+    result = result[::-periods].iloc[::-1]
     return result
 
 
