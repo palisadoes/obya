@@ -135,6 +135,8 @@ def formatter(_df, _pair):
         'k_s': 2,
         'd_s': 2,
         'Δ_l': 2,
+        'seq': 0,
+        'cnt': 0,
     }
     secondsago = 3600 * 24 * 7
     df_ = _df.copy()

@@ -8,6 +8,7 @@ from itertools import groupby
 # PIP3 imports
 import ta
 import pandas as pd
+import numpy as np
 
 
 class Either():
@@ -233,55 +234,23 @@ def evaluate(_df, periods, k_period=35, d_period=5):
         None
 
     """
-    # Initialize key variables
-    df_ = _df.copy()
-    lt_index = []
-
-    # Create a DataFrame in which we will place matches
-    # long = pd.DataFrame(columns=list(df_))
-    long = pd.DataFrame()
-
-    # Evaluate DataFrame
-    s_eval = Evaluate(df_, k_period=k_period, d_period=d_period)
-    s_term = s_eval.either()
-
-    # Get a list of timestamps
-    timestamps = s_term['timestamp'].tolist()
-
-    for timestamp in timestamps:
-        # Get values upto the current timestamp
-        temp_data = df_[df_['timestamp'] <= timestamp]
-
-        # Get long term values
-        # Evaluate DataFrame by summarizing (ie. `periods` number of periods)
-        temp_summ = summary(temp_data, periods=periods)
-
-        temp_eval = Evaluate(temp_summ, k_period=k_period, d_period=d_period)
-        temp_long = temp_eval.difference(limit=4)
-        temp_indx = temp_long.index.tolist()
-
-        # Save found entry
-        for index in temp_indx:
-            if index not in lt_index:
-                long = long.append(pd.DataFrame(temp_long.loc[index]).T)
-
-        # Save the indexes found
-        lt_index.extend(temp_indx)
-
-    # Get unique values
-    lt_index = list(set(lt_index))
+    # Create evaluated DataFrames
+    (s_term, l_term) = ls_evaluate(
+        _df, periods, k_period=k_period, d_period=d_period)
 
     # Get common index values
     indexes = tuple(
         set(
             s_term.index.tolist()
         ).intersection(
-            lt_index
+            list(set(l_term.index.tolist()))
         )
     )
 
     # Create the stochastic version of the long timeframe
-    result = long.copy()
+    result = l_term.copy()
+
+    # Sort and rename columns
     result = result.sort_values(by=['timestamp'])
     result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
 
@@ -300,8 +269,77 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     # Add the frequency column
     result = frequency(result, s_term, periods=periods)
 
+    # Convert all columns to floats as rolling NaNs create object type columns
+    result = result.astype(
+        {
+            'open': np.float64,
+            'close': np.float64,
+            'high': np.float64,
+            'low': np.float64,
+            'k_s': np.float64,
+            'd_s': np.float64,
+            'k_l': np.float64,
+            'd_l': np.float64,
+            'Δ_s': np.float64,
+            'Δ_l': np.float64,
+            'counts': np.float64,
+            'sequential': np.float64
+        }
+    )
+
     # Return
     return result
+
+
+def ls_evaluate(_df, periods, k_period=35, d_period=5):
+    """Evaluate data.
+
+    Args:
+        df_: Short term DataFrame to analyse
+        periods: Number of periods per long term timeframe
+        k_period: Periods for calculating Stochastic slow indicator
+        d_period: Moving Average periods for smoothing Stochastic to create
+            the fast indicator
+
+    Returns:
+        None
+
+    """
+    # Initialize key variables
+    df_ = _df.copy()
+    lt_index = []
+
+    # Create a DataFrame in which we will place matches
+    l_term = pd.DataFrame()
+
+    # Evaluate DataFrame
+    s_term = Evaluate(df_, k_period=k_period, d_period=d_period).either()
+
+    # Get a list of timestamps
+    timestamps = s_term['timestamp'].tolist()
+
+    for timestamp in timestamps:
+        # Get values upto the current timestamp
+        temp_data = df_[df_['timestamp'] <= timestamp]
+
+        # Get long term values
+        # Evaluate DataFrame by summarizing (ie. `periods` number of periods)
+        temp_summ = summary(temp_data, periods=periods)
+        temp_long = Evaluate(
+            temp_summ, k_period=k_period, d_period=d_period).difference(
+                limit=4)
+        temp_indx = temp_long.index.tolist()
+
+        # Save found entry
+        for index in temp_indx:
+            if index not in lt_index:
+                l_term = l_term.append(pd.DataFrame(temp_long.loc[index]).T)
+
+        # Save the indexes found
+        lt_index.extend(temp_indx)
+
+    # Return
+    return(s_term, l_term)
 
 
 def _evaluate(_df, periods, k_period=35, d_period=5):
