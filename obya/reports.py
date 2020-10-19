@@ -1,7 +1,7 @@
 """Application module to manage email formatting."""
 
 import datetime
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 from operator import itemgetter
 
 # Application imports
@@ -25,20 +25,21 @@ def reports(timeframe, days=None, width=60):
     output = []
     arguments = []
     reporting = []
+    cpus = max(1, cpu_count() - 2)
 
     # Create argument list for report
     pairs = pair.pairs()
     for item in pairs:
-        if item.lower() == 'audjpy':
-            arguments.append(
-                (item, timeframe, days)
-            )
+        arguments.append(
+            (item, timeframe, days)
+        )
 
     # Multiprocess the results
-    with Pool(processes=4) as pool:
+    with Pool(processes=cpus) as pool:
         reporting = pool.starmap(_report, arguments)
 
-    # Get report
+    # Process non-blank reports
+    reporting = [_ for _ in reporting if bool(_) is True]
     for item in sorted(reporting, key=itemgetter('report')):
         if bool(item) is True:
             output.append(item['report'])
@@ -87,7 +88,7 @@ def _report(_pair, timeframe, days=None):
 
     # Account for giving enough extra time for calculating the stochastic
     # for the summarized timeframe.
-    offset = timeframe * summary * (k_period + d_period) * 2
+    offset = timeframe * summary * (k_period * d_period)
 
     # Define lookback timeframe
     if bool(days) is False:
@@ -105,7 +106,7 @@ def _report(_pair, timeframe, days=None):
             df_, summary, k_period=k_period, d_period=d_period)
 
         # Drop all rows that are older than days
-        result_ = evaluate.recent(result_, secondsago=secondsago)
+        result_ = evaluate.recent(result_, secondsago=(secondsago - offset))
 
         # Create report
         if result_.empty is False:

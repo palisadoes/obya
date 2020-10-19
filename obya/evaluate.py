@@ -272,7 +272,7 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     # Create the stochastic version of the long timeframe
     result = summary(
         stoch(df_, k_period=k_period, d_period=d_period),
-        periods=periods)
+        periods=periods, crawling=False)
     result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
 
     # Add long term columns
@@ -342,12 +342,13 @@ def _evaluate(_df, periods, k_period=35, d_period=5):
     return result
 
 
-def summary(_df, periods=5):
+def summary(_df, periods=5, crawling=False):
     """Create a DataFrame summarizing past events.
 
     Args:
         _df: pd.DataFrame
         periods: Number of previous periods to include in summarization
+        crawling:
 
     Returns:
         result: Modified DataFrame
@@ -365,7 +366,8 @@ def summary(_df, periods=5):
 
     # Get every `period` row and reverse sort the index to
     # mimic the original ordering
-    result = result[::-periods].iloc[::-1]
+    if bool(crawling) is False:
+        result = result[::-periods].iloc[::-1]
     return result
 
 

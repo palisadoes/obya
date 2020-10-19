@@ -30,6 +30,9 @@ class Parser(object):
         else:
             self.config_help = ''
 
+        # Default days
+        self._default_days = 365
+
     def parser(self):
         """Return all the CLI options.
 
@@ -63,24 +66,25 @@ class Parser(object):
         _setup(subparsers, width=width)
 
         # Parse "evaluate", return object used for parser
-        _evaluate(subparsers, width=width)
+        _evaluate(subparsers, width=width, days=self._default_days)
 
         # Parse "email", return object used for parser
-        _email(subparsers, width=width)
+        _email(subparsers, width=width, days=self._default_days)
 
         # Parse "api", return object used for parser
-        _api(subparsers, width=width)
+        _api(subparsers, width=width, days=(self._default_days * 2))
 
         # Return our parsed CLI arguments
         return _parser
 
 
-def _api(subparsers, width=80):
+def _api(subparsers, width=80, days=365):
     """Process "api" CLI commands.
 
     Args:
         subparsers: Subparsers object
         width: Width of the help text string to STDIO before wrapping
+        days: Days of data to process
 
     Returns:
         None
@@ -98,9 +102,10 @@ def _api(subparsers, width=80):
         '--days',
         type=int,
         required=False,
-        default=720,
+        default=days,
         help=textwrap.fill(
-            'Number of days to use for backfill.', width=width)
+            'Number of days to use for backfill. Default: {}'.format(days),
+            width=width)
     )
 
     # Process verbose flag
@@ -110,12 +115,13 @@ def _api(subparsers, width=80):
         action='store_true')
 
 
-def _email(subparsers, width=80):
+def _email(subparsers, width=80, days=365):
     """Process "email" CLI commands.
 
     Args:
         subparsers: Subparsers object
         width: Width of the help text string to STDIO before wrapping
+        days: Days of data to process
 
     Returns:
         None
@@ -141,19 +147,20 @@ def _email(subparsers, width=80):
     parser.add_argument(
         '--days',
         type=int,
-        default=90,
+        default=days,
         help=textwrap.fill('''\
 Number of days to include in the report. Data is always processed from the \
-first day of available data.''', width=width)
+first day of available data. Default: {}'''.format(days), width=width)
     )
 
 
-def _evaluate(subparsers, width=80):
+def _evaluate(subparsers, width=80, days=365):
     """Process "evaluate" CLI commands.
 
     Args:
         subparsers: Subparsers object
         width: Width of the help text string to STDIO before wrapping
+        days: Days of data to process
 
     Returns:
         None
@@ -188,10 +195,10 @@ def _evaluate(subparsers, width=80):
     parser.add_argument(
         '--days',
         type=int,
-        default=None,
+        default=days,
         help=textwrap.fill('''\
 Number of days to include in the report. Data is always processed from the \
-first day of available data.''', width=width)
+first day of available data. Default: {}'''.format(days), width=width)
     )
 
 
