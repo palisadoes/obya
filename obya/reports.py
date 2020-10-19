@@ -109,18 +109,22 @@ def _report(_pair, timeframe, days=None):
 
         # Create report
         if result_.empty is False:
-            result = {'pair': _pair, 'report': formatter(result_, _pair)}
+            result = {
+                'pair': _pair,
+                'report': formatter(result_, _pair, timeframe=timeframe)
+            }
 
     # Return
     return result
 
 
-def formatter(_df, _pair):
+def formatter(_df, _pair, timeframe=14400):
     """Read a configuration file.
 
     Args:
         _df: DataFrame
         _pair: Pair corresponding to DataFrame
+        timeframe: Timeframe
 
     Returns:
         result: Formatted string
@@ -167,10 +171,40 @@ def formatter(_df, _pair):
             }
         )
 
+        # Remove rows with sequential matches
+        df_ = _no_sequential_matches(df_, timeframe=timeframe)
+
+        # Reverse sort the results
+        df_ = df_.sort_values(by=['timestamp'], ascending=False)
+
         # Drop unwanted columns. Reset index to 'date'
         df_ = df_.drop(columns=drops.split())
         df_.set_index('date', inplace=True)
 
         # Add data to report
         result = '{}\n{}'.format(result, df_.to_string())
+
+    return result
+
+
+def _no_sequential_matches(_df, timeframe=14400):
+    """Read a configuration file.
+
+    Args:
+        _df: DataFrame
+        timeframe: Timeframe
+
+    Returns:
+        result: Formatted string
+
+    """
+    # Initialize key variables
+    df_ = _df.copy().sort_values(by=['timestamp'])
+    column = 'diff'
+
+    # Get diffs and filter
+    result = df_.copy()[1:]
+    result[column] = df_['timestamp'].shift(1)[1:] - df_['timestamp'][1:]
+    result = result[abs(result['diff']) != timeframe]
+    result = result.drop(columns=[column])
     return result
