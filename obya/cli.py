@@ -131,7 +131,7 @@ def _email(subparsers, width=80):
     # Process timeframe flag
     parser.add_argument(
         '--timeframe',
-        type=str,
+        type=int,
         required=True,
         help=textwrap.fill(
             'Timeframe to email.', width=width)

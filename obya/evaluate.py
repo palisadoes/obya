@@ -219,39 +219,82 @@ class Evaluate():
         return result
 
 
-def _min_sequential(df1, df2):
-    """Create merged DataFrame with only rows of minium 'sequential' values.
+def evaluate(_df, periods, k_period=35, d_period=5):
+    """Evaluate data.
 
     Args:
-        df1: First DataFrame
-        df2: Second DataFrame
+        df_: Short term DataFrame to analyse
+        periods: Number of periods per long term timeframe
+        k_period: Periods for calculating Stochastic slow indicator
+        d_period: Moving Average periods for smoothing Stochastic to create
+            the fast indicator
 
     Returns:
-        result: DataFrame that matches criteria
+        None
 
     """
-    # Merge missing values from on DataFrame into the other.
-    # They will both have the same indexes after this operation.
-    merged_1 = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
-    merged_2 = pd.concat([df2, df1[~df1.index.isin(df2.index)]])
+    # Initialize key variables
+    df_ = _df.copy()
+    lt_index = []
 
-    # Extract the 'sequential' values while maintaining the DataFrame indexes
-    s_1 = pd.Series(merged_1['sequential'].tolist(), index=[merged_1.index])
-    s_2 = pd.Series(merged_2['sequential'].tolist(), index=[merged_2.index])
+    # Evaluate DataFrame
+    s_eval = Evaluate(df_, k_period=k_period, d_period=d_period)
+    s_term = s_eval.either()
 
-    # Create pd.Series of the minimum 'sequential' values in each DataFrame
-    escrow = pd.DataFrame(index=s_1.index)
-    escrow['s_1'] = s_1
-    escrow['s_2'] = s_2
-    minima = escrow.min(axis=1)
+    # Get a list of timestamps
+    timestamps = s_term['timestamp'].tolist()
 
-    # Replace 'sequential' column with minima and return
-    merged_1['sequential'] = minima.tolist()
-    result = merged_1.copy()
+    for timestamp in timestamps:
+        # Get values upto the current timestamp
+        temp_data = df_[df_['timestamp'] <= timestamp]
+
+        # Get long term values
+        # Evaluate DataFrame by summarizing (ie. `periods` number of periods)
+        temp_summ = summary(temp_data, periods=periods)
+
+        temp_eval = Evaluate(temp_summ, k_period=k_period, d_period=d_period)
+        temp_long = temp_eval.difference(limit=4)
+
+        lt_index.extend(temp_long.index.tolist())
+
+    # Get unique values
+    lt_index = list(set(lt_index))
+
+    # Get common index values
+    indexes = tuple(
+        set(
+            s_term.index.tolist()
+        ).intersection(
+            lt_index
+        )
+    )
+
+    # Create the stochastic version of the long timeframe
+    result = summary(
+        stoch(df_, k_period=k_period, d_period=d_period),
+        periods=periods)
+    result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
+
+    # Add long term columns
+    result['Δ_l'] = result['k_l'] - result['d_l']
+
+    # Add short term columns
+    result['Δ_s'] = s_term['k'] - s_term['d']
+    result['k_s'] = s_term['k']
+    result['d_s'] = s_term['d']
+    result['sequential'] = s_term['sequential']
+
+    # Filter by shared indexes
+    result = result.loc[result.index.isin(indexes)]
+
+    # Add the frequency column
+    result = frequency(result, s_term, periods=periods)
+
+    # Return
     return result
 
 
-def evaluate(_df, periods, k_period=35, d_period=5):
+def _evaluate(_df, periods, k_period=35, d_period=5):
     """Evaluate data.
 
     Args:
@@ -296,6 +339,33 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     result['sequential'] = s_term['sequential']
     result = result.loc[result.index.isin(indexes)]
     result = frequency(result, s_term)
+    return result
+
+
+def summary(_df, periods=5):
+    """Create a DataFrame summarizing past events.
+
+    Args:
+        _df: pd.DataFrame
+        periods: Number of previous periods to include in summarization
+
+    Returns:
+        result: Modified DataFrame
+
+    """
+    # Initialize key variables
+    df_ = _df.copy()
+    df_['low'] = df_['low'].rolling(periods).min()
+    df_['high'] = df_['high'].rolling(periods).max()
+    df_['volume'] = df_['volume'].rolling(periods).sum()
+    df_['open'] = df_['open'].shift(periods - 1)
+
+    # Trim NaNs
+    result = df_[periods - 1:]
+
+    # Get every `period` row and reverse sort the index to
+    # mimic the original ordering
+    result = result[::-periods].iloc[::-1]
     return result
 
 
@@ -374,33 +444,6 @@ def stoch(_df, k_period=35, d_period=5):
     return result
 
 
-def summary(_df, periods=5):
-    """Create a DataFrame summarizing past events.
-
-    Args:
-        _df: pd.DataFrame
-        periods: Number of previous periods to include in summarization
-
-    Returns:
-        result: Modified DataFrame
-
-    """
-    # Initialize key variables
-    df_ = _df.copy()
-    df_['low'] = df_['low'].rolling(periods).min()
-    df_['high'] = df_['high'].rolling(periods).max()
-    df_['volume'] = df_['volume'].rolling(periods).sum()
-    df_['open'] = df_['open'].shift(periods - 1)
-
-    # Trim NaNs
-    result = df_[periods - 1:]
-
-    # Get every `period` row and reverse sort the index to
-    # mimic the original ordering
-    result = result[::-periods].iloc[::-1]
-    return result
-
-
 def recent(_df, secondsago=5184000/2):
     """Get only the most recent entries in a DataFrame.
 
@@ -451,4 +494,36 @@ def sequential(series):
         result.extend(range(1, count))
         result.append(count)
 
+    return result
+
+
+def _min_sequential(df1, df2):
+    """Create merged DataFrame with only rows of minium 'sequential' values.
+
+    Args:
+        df1: First DataFrame
+        df2: Second DataFrame
+
+    Returns:
+        result: DataFrame that matches criteria
+
+    """
+    # Merge missing values from on DataFrame into the other.
+    # They will both have the same indexes after this operation.
+    merged_1 = pd.concat([df1, df2[~df2.index.isin(df1.index)]])
+    merged_2 = pd.concat([df2, df1[~df1.index.isin(df2.index)]])
+
+    # Extract the 'sequential' values while maintaining the DataFrame indexes
+    s_1 = pd.Series(merged_1['sequential'].tolist(), index=[merged_1.index])
+    s_2 = pd.Series(merged_2['sequential'].tolist(), index=[merged_2.index])
+
+    # Create pd.Series of the minimum 'sequential' values in each DataFrame
+    escrow = pd.DataFrame(index=s_1.index)
+    escrow['s_1'] = s_1
+    escrow['s_2'] = s_2
+    minima = escrow.min(axis=1)
+
+    # Replace 'sequential' column with minima and return
+    merged_1['sequential'] = minima.tolist()
+    result = merged_1.copy()
     return result

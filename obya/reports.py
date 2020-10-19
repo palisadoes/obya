@@ -1,6 +1,8 @@
 """Application module to manage email formatting."""
 
 import datetime
+from multiprocessing import Pool
+from operator import itemgetter
 
 # Application imports
 from obya.db.table import pair
@@ -21,13 +23,25 @@ def reports(timeframe, days=None, width=60):
     """
     # Initialize key variables
     output = []
+    arguments = []
+    reporting = []
 
-    # Create report
+    # Create argument list for report
     pairs = pair.pairs()
-    for pair_ in sorted(pairs):
-        report_ = report(pair_, timeframe, days=days)
-        if bool(report_) is True:
-            output.append(report_)
+    for item in pairs:
+        if item.lower() == 'audjpy':
+            arguments.append(
+                (item, timeframe, days)
+            )
+
+    # Multiprocess the results
+    with Pool(processes=4) as pool:
+        reporting = pool.starmap(_report, arguments)
+
+    # Get report
+    for item in sorted(reporting, key=itemgetter('report')):
+        if bool(item) is True:
+            output.append(item['report'])
 
     # Return
     result = '\n\n{}\n'.format('-' * width).join(output)
@@ -35,6 +49,26 @@ def reports(timeframe, days=None, width=60):
 
 
 def report(_pair, timeframe, days=None):
+    """Create report.
+
+    Args:
+        _pair: Pair to Evaluate
+        timeframe: Timeframe
+        days: Age of report in days
+
+    Returns:
+        result: String report
+
+    """
+    # Return
+    result = ''
+    result_ = _report(_pair, timeframe, days=days)
+    for _, result in result_.items():
+        break
+    return result
+
+
+def _report(_pair, timeframe, days=None):
     """Create reports.
 
     Args:
@@ -47,23 +81,37 @@ def report(_pair, timeframe, days=None):
 
     """
     # Initialize key variables
+    k_period = 35
+    d_period = 5
+    summary = 29
+
+    # Account for giving enough extra time for calculating the stochastic
+    # for the summarized timeframe.
+    offset = timeframe * summary * (k_period + d_period) * 2
+
+    # Define lookback timeframe
     if bool(days) is False:
-        secondsago = 365 * 86400
+        secondsago = (365 * 86400) + offset
     else:
-        secondsago = days * 86400
-    result = ''
+        # Account for giving enough extra time for calculating the stochastic
+        # for the summarized timeframe.
+        secondsago = (days * 86400) + offset
+    result = {}
 
     # Process data
-    df_ = data.dataframe(_pair, timeframe, secondsago=None)
+    df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
     if df_.empty is False:
-        result_ = evaluate.evaluate(df_, 29)
+        result_ = evaluate.evaluate(
+            df_, summary, k_period=k_period, d_period=d_period)
 
         # Drop all rows that are older than days
         result_ = evaluate.recent(result_, secondsago=secondsago)
 
         # Create report
         if result_.empty is False:
-            result = formatter(result_, _pair)
+            result = {'pair': _pair, 'report': formatter(result_, _pair)}
+
+    # Return
     return result
 
 
