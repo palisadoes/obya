@@ -64,7 +64,7 @@ def report(_pair, timeframe, days=None):
     """
     # Return
     result_ = _report(_pair, timeframe, days=days)
-    result = result_.get(_pair, '')
+    result = result_.get('report', '')
     return result
 
 

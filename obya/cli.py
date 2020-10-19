@@ -185,7 +185,7 @@ def _evaluate(subparsers, width=80, days=365):
     # Process timeframe flag
     parser.add_argument(
         '--timeframe',
-        type=str,
+        type=int,
         required=True,
         help=textwrap.fill(
             'Timeframe to evaluate.', width=width)

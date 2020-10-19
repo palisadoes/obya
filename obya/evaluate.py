@@ -237,6 +237,10 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     df_ = _df.copy()
     lt_index = []
 
+    # Create a DataFrame in which we will place matches
+    # long = pd.DataFrame(columns=list(df_))
+    long = pd.DataFrame()
+
     # Evaluate DataFrame
     s_eval = Evaluate(df_, k_period=k_period, d_period=d_period)
     s_term = s_eval.either()
@@ -254,8 +258,15 @@ def evaluate(_df, periods, k_period=35, d_period=5):
 
         temp_eval = Evaluate(temp_summ, k_period=k_period, d_period=d_period)
         temp_long = temp_eval.difference(limit=4)
+        temp_indx = temp_long.index.tolist()
 
-        lt_index.extend(temp_long.index.tolist())
+        # Save found entry
+        for index in temp_indx:
+            if index not in lt_index:
+                long = long.append(pd.DataFrame(temp_long.loc[index]).T)
+
+        # Save the indexes found
+        lt_index.extend(temp_indx)
 
     # Get unique values
     lt_index = list(set(lt_index))
@@ -270,9 +281,8 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     )
 
     # Create the stochastic version of the long timeframe
-    result = summary(
-        stoch(df_, k_period=k_period, d_period=d_period),
-        periods=periods, crawling=False)
+    result = long.copy()
+    result = result.sort_values(by=['timestamp'])
     result = result.rename(columns={'k': 'k_l', 'd': 'd_l'})
 
     # Add long term columns
