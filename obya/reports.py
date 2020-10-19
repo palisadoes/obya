@@ -1,7 +1,7 @@
 """Application module to manage email formatting."""
 
 import datetime
-from multiprocessing import Pool, cpu_count
+from multiprocessing import cpu_count, get_context
 from operator import itemgetter
 
 # Application imports
@@ -35,8 +35,9 @@ def reports(timeframe, days=None, width=60):
         )
 
     # Multiprocess the results
-    with Pool(processes=cpus) as pool:
+    with get_context('spawn').Pool(processes=cpus) as pool:
         reporting = pool.starmap(_report, arguments)
+    pool.join()
 
     # Process non-blank reports
     reporting = [_ for _ in reporting if bool(_) is True]
@@ -62,10 +63,8 @@ def report(_pair, timeframe, days=None):
 
     """
     # Return
-    result = ''
     result_ = _report(_pair, timeframe, days=days)
-    for _, result in result_.items():
-        break
+    result = result_.get(_pair, '')
     return result
 
 
@@ -85,6 +84,7 @@ def _report(_pair, timeframe, days=None):
     k_period = 35
     d_period = 5
     summary = 29
+    result = {}
 
     # Account for giving enough extra time for calculating the stochastic
     # for the summarized timeframe.
@@ -97,7 +97,6 @@ def _report(_pair, timeframe, days=None):
         # Account for giving enough extra time for calculating the stochastic
         # for the summarized timeframe.
         secondsago = (days * 86400) + offset
-    result = {}
 
     # Process data
     df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)

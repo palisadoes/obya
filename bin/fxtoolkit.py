@@ -72,6 +72,9 @@ def main():
 
     # Email data
     if args.mode == 'email':
+        # for _pair in sorted(pair.pairs()):
+        #     report = reports.report(_pair, args.timeframe, days=args.days)
+        #     print(report)
         report = reports.reports(args.timeframe, days=args.days)
         print(report)
         sys.exit()

@@ -68,7 +68,7 @@ def main():
             pool_timeout=pool_timeout)
 
         # Fix for multiprocessing on engines.
-        _add_engine_pidguard(db_engine)
+        # _add_engine_pidguard(db_engine)
 
         # Ensure connections are disposed before sharing engine.
         db_engine.dispose()
