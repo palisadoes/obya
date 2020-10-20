@@ -53,7 +53,16 @@ def send(body, subject, attachments=None):
     message['From'] = config.email_from
     message['To'] = ', '.join(config.email_to)
     message.add_header('reply-to', config.email_from)
-    message.attach(MIMEText(body))
+    html = '''
+<html>
+    <head></head>
+    <body><font face="courier">
+        {}
+    </font></body>
+</html>
+'''.format('<br>'.join('&nbsp;'.join(body.split(' ')).split('\n')))
+
+    message.attach(MIMEText(html, 'html', 'UTF-8'))
 
     # Add attachment if required
     if bool(attachments) is True:

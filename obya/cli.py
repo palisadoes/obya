@@ -128,6 +128,7 @@ def _email(subparsers, width=80, days=365):
 
     """
     # Initialize key variables
+    duration = int(days / 2)
     parser = subparsers.add_parser(
         'email',
         help=textwrap.fill(
@@ -147,10 +148,10 @@ def _email(subparsers, width=80, days=365):
     parser.add_argument(
         '--days',
         type=int,
-        default=days,
+        default=duration,
         help=textwrap.fill('''\
 Number of days to include in the report. Data is always processed from the \
-first day of available data. Default: {}'''.format(days), width=width)
+first day of available data. Default: {}'''.format(duration), width=width)
     )
 
 
@@ -177,7 +178,7 @@ def _evaluate(subparsers, width=80, days=365):
     parser.add_argument(
         '--pair',
         type=str,
-        required=True,
+        required=False,
         help=textwrap.fill(
             'Pair to evaluate.', width=width)
     )

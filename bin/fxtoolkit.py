@@ -7,6 +7,8 @@ Test
 # Standard imports
 import os
 import sys
+import time
+from datetime import datetime
 
 # Try to create a working PYTHONPATH
 _BIN_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -24,6 +26,7 @@ else:
 from obya import cli
 from obya import evaluate
 from obya import reports
+from obya import email
 from obya.db import setup
 from obya.db.table import data
 from obya.db.table import pair
@@ -66,17 +69,20 @@ def main():
 
     # Evaluate data
     if args.mode == 'evaluate':
-        report = reports.report(args.pair, args.timeframe, days=args.days)
+        if bool(args.pair) is True:
+            report = reports.report(args.pair, args.timeframe, days=args.days)
+        else:
+            report = reports.reports(args.timeframe, days=args.days)
         print(report)
         sys.exit()
 
     # Email data
     if args.mode == 'email':
-        # for _pair in sorted(pair.pairs()):
-        #     report = reports.report(_pair, args.timeframe, days=args.days)
-        #     print(report)
         report = reports.reports(args.timeframe, days=args.days)
-        print(report)
+        now = int(time.time())
+        subject = 'Obya FX Report - {}'.format(
+            datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M'))
+        email.send(report, subject)
         sys.exit()
 
     # Exit
