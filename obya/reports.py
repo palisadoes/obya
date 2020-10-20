@@ -3,6 +3,7 @@
 import datetime
 from multiprocessing import cpu_count, get_context
 from operator import itemgetter
+import numpy as np
 
 # Application imports
 from obya.db.table import pair
@@ -132,13 +133,14 @@ def formatter(_df, _pair, timeframe=14400):
     """
     # Initialize key variables
     result = ''
-    drops = 'timestamp open high low close volume Δ_s'
+    drops = 'timestamp open high low close volume'
     rounding = {
         'k_l': 2,
         'd_l': 2,
+        'Δ_l': 2,
         'k_s': 2,
         'd_s': 2,
-        'Δ_l': 2,
+        'Δ_s': 2,
         'seq': 0,
         'cnt': 0,
     }
@@ -200,11 +202,26 @@ def _no_sequential_matches(_df, timeframe=14400):
     """
     # Initialize key variables
     df_ = _df.copy().sort_values(by=['timestamp'])
-    column = 'diff'
+    d_col = 'diff'
+    l_col = 'last'
 
     # Get diffs and filter
     result = df_.copy()[1:]
-    result[column] = df_['timestamp'].shift(1)[1:] - df_['timestamp'][1:]
-    result = result[abs(result['diff']) != timeframe]
-    result = result.drop(columns=[column])
+    result[d_col] = df_['timestamp'][1:] - df_['timestamp'].shift(1)[1:]
+
+    # Identify lasts
+    diffs = result[d_col].tolist()
+    lasts = []
+    for key, value in enumerate(diffs[:-1]):
+        not_last = (int(diffs[key + 1]) == timeframe) and (value == timeframe)
+        lasts.append(not_last)
+    lasts.append(False)
+    lasts = [not bool(_) for _ in lasts]
+    result[l_col] = np.asarray(lasts)
+
+    # Filter and drop excess column
+    result = result[result[l_col] == True]
+    result = result.drop(columns=[l_col, d_col])
+
+    # Return
     return result

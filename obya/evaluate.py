@@ -258,9 +258,9 @@ def evaluate(_df, periods, k_period=35, d_period=5):
     result['Δ_l'] = result['k_l'] - result['d_l']
 
     # Add short term columns
-    result['Δ_s'] = s_term['k'] - s_term['d']
     result['k_s'] = s_term['k']
     result['d_s'] = s_term['d']
+    result['Δ_s'] = result['k_s'] - result['d_s']
     result['sequential'] = s_term['sequential']
 
     # Filter by shared indexes
