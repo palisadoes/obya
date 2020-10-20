@@ -3,7 +3,9 @@
 import datetime
 from multiprocessing import cpu_count, get_context
 from operator import itemgetter
+
 import numpy as np
+import pandas as pd
 
 # Application imports
 from obya.db.table import pair
@@ -69,7 +71,7 @@ def report(_pair, timeframe, days=None):
     return result
 
 
-def _report(_pair, timeframe, days=None):
+def _report(_pair, timeframe, days=None, dataframe=None):
     """Create reports.
 
     Args:
@@ -100,7 +102,11 @@ def _report(_pair, timeframe, days=None):
         secondsago = (days * 86400) + offset
 
     # Process data
-    df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
+    if isinstance(dataframe, pd.DataFrame) is False:
+        df_ = data.dataframe(_pair, timeframe, secondsago=secondsago)
+    else:
+        df_ = dataframe.copy()
+
     if df_.empty is False:
         result_ = evaluate.evaluate(
             df_, summary, k_period=k_period, d_period=d_period)
@@ -186,6 +192,8 @@ def formatter(_df, _pair, timeframe=14400):
         # Add data to report
         result = '{}\n{}'.format(result, df_.to_string())
 
+        # Trim trailing spaces from each line of output
+        result = '\n'.join([_.rstrip() for _ in result.split('\n')])
     return result
 
 
